@@ -1,16 +1,16 @@
 import os
 from os import environ, path
 from pathlib import Path
-
+import dj_database_url
 from django.templatetags.static import static
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
-
+from dotenv import load_dotenv  # 1. Importar dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = 'django-insecure-8en#l3nj+8+22lh0ag-&7vbx@-t4t&ciuz3v)0qf_bl&k42tfr'
 
-DEBUG = True
+DEBUG = False
 ALLOWED_HOSTS = [
     '.vercel.app',
     '.now.sh',
@@ -82,8 +82,20 @@ WSGI_APPLICATION = 'SistemaGestioncv.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        # Usamos el motor de PostgreSQL
+        'ENGINE': 'django.db.backends.postgresql',
+
+        # Leemos cada variable del entorno
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
+
+        # Esto es crucial para Supabase: equivale al '?sslmode=require'
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
     }
 }
 
