@@ -81,26 +81,26 @@ TEMPLATES = [
 WSGI_APPLICATION = 'SistemaGestioncv.wsgi.application'
 
 DATABASES = {
-    'default': {
-        # Usamos el motor de PostgreSQL
-        'ENGINE': 'django.db.backends.postgresql',
-
-        # Leemos cada variable del entorno
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PORT': os.environ.get('DB_PORT'),
-
-        # Esto es crucial para Supabase: equivale al '?sslmode=require'
-        'OPTIONS': {
-            'sslmode': 'require',
-        },
-    }
     # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': BASE_DIR / 'db.sqlite3',
+    #     # Usamos el motor de PostgreSQL
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #
+    #     # Leemos cada variable del entorno
+    #     'NAME': os.environ.get('DB_NAME'),
+    #     'USER': os.environ.get('DB_USER'),
+    #     'PASSWORD': os.environ.get('DB_PASSWORD'),
+    #     'HOST': os.environ.get('DB_HOST'),
+    #     'PORT': os.environ.get('DB_PORT'),
+    #
+    #     # Esto es crucial para Supabase: equivale al '?sslmode=require'
+    #     'OPTIONS': {
+    #         'sslmode': 'require',
+    #     },
     # }
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 
 }
 
@@ -162,21 +162,7 @@ UNFOLD = {
     "SITE_TITLE": "Sistema de Gestión de Obras",
     "SITE_HEADER": "Gestión de Obras Civiles",
     "SITE_URL": "/",
-    "SITE_DROPDOWN": [
-        {
-            "title": _("Unfold theme repository"),
-            "link": "https://github.com/unfoldadmin/django-unfold",
-        },
-        {
 
-            "title": _("Turbo boilerplate repository"),
-            "link": "https://github.com/unfoldadmin/turbo",
-        },
-        {
-            "title": _("Technical documentation"),
-            "link": "https://unfoldadmin.com/docs/",
-        },
-    ],
     "SHOW_HISTORY": True,
 
     "BORDER_RADIUS": "12px",
