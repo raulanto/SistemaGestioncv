@@ -1,0 +1,14 @@
+.DS_Store
+.idea/
+.coverage
+*.pyc
+*.sh
+__pycache__
+.venv
+node_modules
+dist/
+
+
+static
+media
+

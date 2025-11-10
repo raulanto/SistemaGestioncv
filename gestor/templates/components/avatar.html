@@ -1,0 +1,21 @@
+{% load unfold i18n %}
+<div
+    class="flex items-center gap-2"
+    {% if tooltip %}title="{{ tooltip }}"{% endif %}
+>
+    <div class="flex-shrink-0">
+        {% if image_url %}
+            <img class="w-7 h-7 rounded-full" src="{{ image_url }}" alt="{{ text }}">
+        {% else %}
+            <div class="flex items-center justify-center w-7 h-7 rounded-full
+                        bg-primary-100 dark:bg-blue-900 text-blue-700 dark:text-blue-400
+                        text-xs font-semibold">
+                {{ initials }}
+            </div>
+        {% endif %}
+    </div>
+
+    <span class="text-sm text-base-900 dark:text-base-100">
+        {{ text }}
+    </span>
+</div>

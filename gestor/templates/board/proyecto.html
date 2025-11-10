@@ -1,0 +1,359 @@
+<!-- templates/admin/proyecto_dashboard.html -->
+{% extends "unfold/layouts/base.html" %}
+{% load i18n static unfold %}
+
+{% block title %}Dashboard - {{ proyecto.nombre }}{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="flex flex-col gap-6 p-6">
+        <div class="border border-base-300 border-dashed  p-3 rounded dark:border-base-700">
+
+            {# Header con breadcrumbs estilo Unfold #}
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-3xl font-bold text-base-900 dark:text-white">
+                        📊 {{ proyecto.nombre }}
+                    </h1>
+                    <div class="flex items-center gap-2 mt-2 text-sm text-base-600 dark:text-base-400">
+                        <span class="font-medium">{{ proyecto.codigo }}</span>
+                        <span>•</span>
+                        <span>{{ proyecto.cliente }}</span>
+                        <span>•</span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                        {% if proyecto.estado == 'EJECUCION' %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                        {% elif proyecto.estado == 'PAUSADO' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
+                        {% elif proyecto.estado == 'FINALIZADO' %}bg-base-100 text-base-800 dark:bg-base-700 dark:text-base-200
+                        {% else %}bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200
+                        {% endif %}">
+                        {{ proyecto.get_estado_display }}
+                    </span>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <a href="{% url 'admin:proyecto_mapa' proyecto.id %}"
+                       class="inline-flex items-center px-4 py-2 border border-base-300 dark:border-base-600
+                          rounded-lg text-sm font-medium text-base-700 dark:text-base-200
+                          bg-white dark:bg-base-900 hover:bg-base-50 dark:hover:bg-base-700">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        Mapa
+                    </a>              <a href="{% url 'admin:gestor_proyecto_change' proyecto.id %}"
+                   class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700
+                          text-white rounded-lg text-sm font-medium">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                    Editar Proyecto
+                </a>
+                </div>
+            </div>
+        </div>
+
+        {# Tarjetas de Estadísticas - Estilo Unfold #}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+            {# Card 1: Total Elementos #}
+            <div class="bg-white dark:bg-base-900 rounded-lg shadow-sm border border-base-200 dark:border-base-700 p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-sm font-medium text-base-600 dark:text-base-400 uppercase tracking-wider">
+                        Total Elementos
+                    </div>
+                    <div class="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
+                        <svg class="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="text-4xl font-bold text-base-900 dark:text-white">
+                    {{ total_elementos }}
+                </div>
+            </div>
+
+            {# Card 2: Terminados #}
+            <div class="bg-white dark:bg-base-900 rounded-lg shadow-sm border border-base-200 dark:border-base-700 p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-sm font-medium text-base-600 dark:text-base-400 uppercase tracking-wider">
+                        Terminados
+                    </div>
+                    <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                        <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="text-4xl font-bold text-base-900 dark:text-white">
+                    {{ terminados }}
+                </div>
+                <div class="mt-2 text-sm text-base-500 dark:text-base-400">
+                    {% widthratio terminados total_elementos 100 %}% del total
+                </div>
+            </div>
+
+            {# Card 3: En Proceso #}
+            <div class="bg-white dark:bg-base-900 rounded-lg shadow-sm border border-base-200 dark:border-base-700 p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-sm font-medium text-base-600 dark:text-base-400 uppercase tracking-wider">
+                        En Proceso
+                    </div>
+                    <div class="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+                        <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="text-4xl font-bold text-base-900 dark:text-white">
+                    {{ en_proceso }}
+                </div>
+                <div class="mt-2 text-sm text-base-500 dark:text-base-400">
+                    Activos ahora
+                </div>
+            </div>
+
+            {# Card 4: Avance Promedio #}
+            <div class="bg-white dark:bg-base-900 rounded-lg shadow-sm border border-base-200 dark:border-base-700 p-6 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-sm font-medium text-base-600 dark:text-base-400 uppercase tracking-wider">
+                        Avance Promedio
+                    </div>
+                    <div class="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                        <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="text-4xl font-bold text-base-900 dark:text-white">
+                    {{ avance_promedio|floatformat:1 }}%
+                </div>
+                <div class="mt-2">
+                    <div class="w-full bg-base-200 dark:bg-base-700 rounded-full h-2">
+                        <div class="h-2 rounded-full
+                            {% if avance_promedio >= 75 %}bg-green-500
+                            {% elif avance_promedio >= 50 %}bg-yellow-500
+                            {% elif avance_promedio >= 25 %}bg-orange-500
+                            {% else %}bg-red-500
+                            {% endif %}"
+                             style="width: {{ avance_promedio }}%">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        {# Gráficas - Contenedor estilo Unfold #}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {# Gráfica 1: Estados #}
+            <div class="bg-white dark:bg-base-900 rounded-lg shadow-sm border border-base-200 dark:border-base-700 p-6">
+                <div class="mb-4 pb-4 border-b border-base-200 dark:border-base-700">
+                    <h3 class="text-lg font-semibold text-base-900 dark:text-white">
+                        Distribución por Estado
+                    </h3>
+                    <p class="text-sm text-base-500 dark:text-base-400 mt-1">
+                        Estado actual de todos los elementos
+                    </p>
+                </div>
+                <div class="relative" style="height: 300px;">
+                    <canvas id="estadosChart"></canvas>
+                </div>
+            </div>
+
+            {# Gráfica 2: Reportes #}
+            <div class="bg-white dark:bg-base-900 rounded-lg shadow-sm border border-base-200 dark:border-base-700 p-6">
+                <div class="mb-4 pb-4 border-b border-base-200 dark:border-base-700">
+                    <h3 class="text-lg font-semibold text-base-900 dark:text-white">
+                        Reportes Semanales
+                    </h3>
+                    <p class="text-sm text-base-500 dark:text-base-400 mt-1">
+                        Actividad de los últimos 7 días
+                    </p>
+                </div>
+                <div class="relative" style="height: 300px;">
+                    <canvas id="reportesChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        {# Información Adicional del Proyecto #}
+        <div class="bg-white dark:bg-base-900 rounded-lg shadow-sm border border-base-200 dark:border-base-700 p-6">
+            <h3 class="text-lg font-semibold text-base-900 dark:text-white mb-4 pb-4 border-b border-base-200 dark:border-base-700">
+                Información del Proyecto
+            </h3>
+            <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div>
+                    <dt class="text-sm font-medium text-base-500 dark:text-base-400">Director de Obra</dt>
+                    <dd class="mt-1 text-sm text-base-900 dark:text-white font-medium">
+                        {{ proyecto.director_obra|default:"No asignado" }}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-base-500 dark:text-base-400">Residente de Obra</dt>
+                    <dd class="mt-1 text-sm text-base-900 dark:text-white font-medium">
+                        {{ proyecto.residente_obra|default:"No asignado" }}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-base-500 dark:text-base-400">Sistema de Coordenadas</dt>
+                    <dd class="mt-1 text-sm text-base-900 dark:text-white font-medium">
+                        {{ proyecto.get_sistema_coordenadas_display }}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-base-500 dark:text-base-400">Fecha de Inicio</dt>
+                    <dd class="mt-1 text-sm text-base-900 dark:text-white font-medium">
+                        {{ proyecto.fecha_inicio|date:"d M Y" }}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-base-500 dark:text-base-400">Fecha Fin Estimada</dt>
+                    <dd class="mt-1 text-sm text-base-900 dark:text-white font-medium">
+                        {{ proyecto.fecha_fin_estimada|date:"d M Y" }}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-base-500 dark:text-base-400">Presupuesto</dt>
+                    <dd class="mt-1 text-sm text-base-900 dark:text-white font-medium">
+                        ${{ proyecto.presupuesto_total|floatformat:0 }} MXN
+                    </dd>
+                </div>
+            </dl>
+        </div>
+
+    </div>
+    {% block extrajs %}
+        {{ block.super }}
+        <script>
+            // Configuración de tema oscuro para Chart.js
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            const textColor = isDarkMode ? '#e5e7eb' : '#374151';
+            const gridColor = isDarkMode ? '#374151' : '#e5e7eb';
+
+            // Gráfica de Estados (Doughnut)
+            const ctx1 = document.getElementById('estadosChart');
+            if (ctx1) {
+                new Chart(ctx1, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Terminados', 'En Proceso', 'Pendientes'],
+                        datasets: [{
+                            data: [
+                                {{ terminados }},
+                                {{ en_proceso }},
+                                {{ pendientes }}
+                            ],
+                            backgroundColor: [
+                                '#10b981',  // green
+                                '#f59e0b',  // yellow
+                                '#ef4444',  // red
+                            ],
+                            borderWidth: 2,
+                            borderColor: isDarkMode ? '#1f2937' : '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: textColor,
+                                    padding: 15,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        let label = context.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        label += context.parsed + ' elementos';
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Gráfica de Reportes (Bar)
+            const ctx2 = document.getElementById('reportesChart');
+            if (ctx2) {
+                new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+                        datasets: [{
+                            label: 'Reportes',
+                            data: [12, 19, 15, 25, 22, 8, 5], // Datos de ejemplo
+                            backgroundColor: '#3b82f6',
+                            borderColor: '#2563eb',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: textColor,
+                                    stepSize: 5
+                                },
+                                grid: {
+                                    color: gridColor
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: textColor
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (context) {
+                                        return context.parsed.y + ' reportes';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        </script>
+    {% endblock %}
+{% endblock %}
+

@@ -1,0 +1,707 @@
+{% extends "unfold/layouts/base.html" %}
+{% load static unfold %}
+
+{% block title %}Explorador de Proyectos{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        /* Sidebar colapsable */
+        .sidebar-tree {
+            height: calc(100vh - 180px);
+            overflow-y: auto;
+        }
+
+        .sidebar-container {
+            transition: all 0.3s ease;
+            width: 300px;
+        }
+
+        .sidebar-container.collapsed {
+            width: 0;
+            overflow: hidden;
+        }
+
+        /* Árbol de proyectos */
+        .tree-item {
+            cursor: pointer;
+            transition: all 0.15s;
+            border-radius: 0.5rem;
+        }
+
+        .tree-item:hover {
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        .tree-item.active {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid #3b82f6;
+        }
+
+        .tree-children {
+            display: none;
+            padding-left: 0.75rem;
+            margin-top: 0.25rem;
+        }
+
+        .tree-children.expanded {
+            display: block;
+        }
+
+        /* Mapa */
+        #map {
+            height: 600px;
+            border-radius: 0.5rem;
+        }
+
+        .chart-container {
+            height: 350px;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            border-radius: 0.5rem;
+        }
+
+        .dark .loading-overlay {
+            background: rgba(31, 41, 55, 0.95);
+        }
+
+        /* Scrollbar personalizado */
+        .sidebar-tree::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar-tree::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar-tree::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.3);
+            border-radius: 3px;
+        }
+
+        .sidebar-tree::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.5);
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="flex gap-4 ">
+
+        {# ============ SIDEBAR COLAPSABLE - ÁRBOL DE PROYECTOS ============ #}
+        <div class="sidebar-container flex-shrink-0" id="sidebarContainer">
+            <div class="bg-white dark:bg-base-800 rounded-lg shadow-sm border border-base-200 dark:border-base-700 h-full flex flex-col">
+
+                {# Header del árbol #}
+                <div class="p-4 border-b border-base-200 dark:border-base-700">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none"
+                                 stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                            </svg>
+                            <h2 class="text-base font-semibold text-base-900 dark:text-white">Proyectos</h2>
+                        </div>
+                        <span class="text-xs text-base-500 dark:text-base-400">{{ proyectos_tree|length }}</span>
+                    </div>
+                    <input type="text"
+                           id="searchTree"
+                           placeholder="Buscar..."
+                           class="w-full px-3 py-1.5 text-sm border border-base-300 dark:border-base-600 rounded-lg
+                              bg-white dark:bg-base-700 text-base-900 dark:text-white
+                              focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                </div>
+
+                {# Árbol de proyectos #}
+                <div class="sidebar-tree p-3" id="projectTree">
+                    {% for proyecto in proyectos_tree %}
+                        <div class="tree-item mb-1 p-2" data-type="proyecto" data-id="{{ proyecto.id }}">
+                            <div class="flex items-center gap-2">
+                                <button class="tree-toggle flex-shrink-0 w-4 h-4 flex items-center justify-center text-base-400 hover:text-base-600 dark:hover:text-base-300 transition-colors">
+                                    <svg class="w-3.5 h-3.5 transform transition-transform" fill="none"
+                                         stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </button>
+                                <svg class="w-4 h-4 flex-shrink-0 text-blue-600 dark:text-blue-400" fill="none"
+                                     stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                </svg>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-xs font-medium text-base-900 dark:text-white truncate">
+                                        {{ proyecto.codigo }}
+                                    </div>
+                                    <div class="text-xs text-base-500 dark:text-base-400">
+                                        {{ proyecto.elementos_count }} elem.
+                                    </div>
+                                </div>
+                                <span class="flex-shrink-0 w-2 h-2 rounded-full
+                            {% if proyecto.estado == 'EJECUCION' %}bg-green-500
+                            {% elif proyecto.estado == 'PAUSADO' %}bg-yellow-500
+                            {% elif proyecto.estado == 'FINALIZADO' %}bg-base-400
+                            {% else %}bg-blue-500
+                            {% endif %}" title="{{ proyecto.estado }}">
+                        </span>
+                            </div>
+
+                            {# Elementos hijos #}
+                            <div class="tree-children mt-1">
+                                {% for elemento in proyecto.elementos %}
+                                    <div class="tree-item p-1.5 mb-0.5"
+                                         data-type="elemento"
+                                         data-id="{{ elemento.id }}"
+                                         data-lat="{{ elemento.avance }}"
+                                         data-lng="{{ elemento.avance }}"
+                                         data-codigo="{{ elemento.codigo }}"
+                                         data-estado="{{ elemento.estado }}">
+                                        <div class="flex items-center gap-2">
+                                            <svg class="w-3.5 h-3.5 flex-shrink-0 text-purple-500 dark:text-purple-400"
+                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                            </svg>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="text-xs text-base-900 dark:text-white truncate">
+                                                    {{ elemento.codigo }}
+                                                </div>
+                                            </div>
+                                            <span class="text-xs font-medium
+                                        {% if elemento.avance >= 80 %}text-green-600 dark:text-green-400
+                                        {% elif elemento.avance >= 50 %}text-yellow-600 dark:text-yellow-400
+                                        {% else %}text-red-600 dark:text-red-400
+                                        {% endif %}">
+                                        {{ elemento.avance|floatformat:0 }}%
+                                    </span>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+        </div>
+
+        {# Botón para colapsar sidebar #}
+        <button id="toggleSidebar"
+                class=" w-10 h-10 bg-white dark:bg-base-800 rounded-lg shadow-lg border border-base-200 dark:border-base-700
+                       flex items-center justify-center text-base-600 dark:text-base-400 hover:text-primary-600 dark:hover:text-primary-400
+                       transition-all duration-300"
+                style="left: 316px;">
+            <svg class="w-5 h-5 transition-transform duration-300" id="toggleIcon" fill="none" stroke="currentColor"
+                 viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </button>
+
+        {# ============ CONTENIDO PRINCIPAL ============ #}
+        <div class="flex-1 flex flex-col gap-4 overflow-y-auto transition-all duration-300">
+
+            {# Estado inicial - Sin proyecto seleccionado #}
+            <div id="emptyState" class="flex-1 flex items-center justify-center">
+                <div class="text-center">
+                    <svg class="w-20 h-20 mx-auto text-base-300 dark:text-base-700 mb-4" fill="none"
+                         stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                    </svg>
+                    <h3 class="text-lg font-semibold text-base-900 dark:text-white mb-2">
+                        Selecciona un Proyecto
+                    </h3>
+                    <p class="text-sm text-base-500 dark:text-base-400">
+                        Haz clic en un proyecto del árbol para ver su información
+                    </p>
+                </div>
+            </div>
+
+            {# Contenido del proyecto #}
+            <div id="projectContent" class="hidden space-y-4">
+
+                {# Header compacto con KPIs #}
+                <div class="bg-gradient-to-r from-primary-800 via-primary-600 to-black/90   rounded-lg shadow-sm p-4 text-white">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <h1 class="text-xl font-bold" id="projectName">-</h1>
+                            <p class="text-sm text-primary-100" id="projectCode">-</p>
+                        </div>
+                        <span class="px-2.5 py-1 bg-white/20 backdrop-blur rounded-lg text-xs font-medium"
+                              id="projectStatus">-</span>
+                    </div>
+
+                    {# KPIs compactos #}
+                    <div class="grid grid-cols-5 gap-3">
+                        <div class="bg-white/10 backdrop-blur rounded-lg p-3 text-center">
+                            <div class="text-2xl font-bold" id="kpi1">0</div>
+                            <div class="text-xs text-primary-100">Total</div>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur rounded-lg p-3 text-center">
+                            <div class="text-2xl font-bold" id="kpi2">0</div>
+                            <div class="text-xs text-primary-100">Terminados</div>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur rounded-lg p-3 text-center">
+                            <div class="text-2xl font-bold" id="kpi3">0</div>
+                            <div class="text-xs text-primary-100">En Proceso</div>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur rounded-lg p-3 text-center">
+                            <div class="text-2xl font-bold" id="kpi4">0</div>
+                            <div class="text-xs text-primary-100">Pendientes</div>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur rounded-lg p-3 text-center">
+                            <div class="text-2xl font-bold" id="kpi5">0%</div>
+                            <div class="text-xs text-primary-100">Avance</div>
+                        </div>
+                    </div>
+                </div>
+
+                {# Mapa con controles - EXPANDIDO #}
+                <div class="bg-white dark:bg-base-800 rounded-lg shadow-sm border border-base-200 dark:border-base-700">
+                    {# Controles del mapa #}
+                    <div class="p-3 border-b border-base-200 dark:border-base-700">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <select id="filterEstado"
+                                    class="px-3 py-1.5 text-sm border border-base-300 dark:border-base-600 rounded-lg
+                                           bg-white dark:bg-base-700 text-base-900 dark:text-white">
+                                <option value="">Todos los estados</option>
+                                <option value="TERMINADO">Terminado</option>
+                                <option value="COLADO">Colado</option>
+                                <option value="ARMADO">Armado</option>
+                                <option value="CIMBRADO">Cimbrado</option>
+                                <option value="EXCAVACION">Excavación</option>
+                                <option value="REPLANTEO">Replanteo</option>
+                                <option value="PENDIENTE">Pendiente</option>
+                            </select>
+                            <button id="btnCenterMap"
+                                    class="px-3 py-1.5 bg-base-100 dark:bg-base-700 hover:bg-base-200 dark:hover:bg-base-600
+                                           text-base-700 dark:text-base-200 rounded-lg text-sm font-medium transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                </svg>
+                            </button>
+                            <div class="flex-1"></div>
+                            <span class="text-xs text-base-500 dark:text-base-400">
+                                <span id="visibleElementosCount">0</span> elementos visibles
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="p-3 relative">
+                        <div id="map"></div>
+                        <div id="mapLoading" class="loading-overlay" style="display: none;">
+                            <div class="text-center">
+                                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600 mx-auto mb-2"></div>
+                                <p class="text-xs text-base-600 dark:text-base-400">Cargando mapa...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# Gráfica compacta #}
+                <div class="bg-white dark:bg-base-800 rounded-lg shadow-sm border border-base-200 dark:border-base-700">
+                    <div class="p-3 border-b border-base-200 dark:border-base-700">
+                        <h3 class="text-sm font-semibold text-base-900 dark:text-white">
+                            Distribución por Estado
+                        </h3>
+                    </div>
+                    <div class="p-4 relative">
+                        <div class="chart-container">
+                            <canvas id="estadosChart"></canvas>
+                        </div>
+                        <div id="chartLoading" class="loading-overlay" style="display: none;">
+                            <div class="text-center">
+                                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600 mx-auto mb-2"></div>
+                                <p class="text-xs text-base-600 dark:text-base-400">Cargando gráfica...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% block extrajs %}
+        <script>
+            const proyectosData = {{ proyectos_tree_json|safe }};
+            let map = null;
+            let estadosChart = null;
+            let currentMarkers = [];
+            let allElementos = [];
+            let currentProyecto = null;
+            let elementosMap = {}; // Mapa de ID -> marker
+
+            // Toggle sidebar
+            document.getElementById('toggleSidebar').addEventListener('click', function () {
+                const sidebar = document.getElementById('sidebarContainer');
+                const btn = this;
+                const icon = document.getElementById('toggleIcon');
+
+                sidebar.classList.toggle('collapsed');
+
+                if (sidebar.classList.contains('collapsed')) {
+                    btn.style.left = '16px';
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    btn.style.left = '316px';
+                    icon.style.transform = 'rotate(0deg)';
+                }
+
+                // Redimensionar mapa
+                setTimeout(() => {
+                    if (map) map.invalidateSize();
+                }, 350);
+            });
+
+            // Inicializar mapa
+            function initMap() {
+                if (!map) {
+                    map = L.map('map').setView([19.0, -99.0], 5);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap contributors',
+                        maxZoom: 19
+                    }).addTo(map);
+                }
+            }
+
+            // Toggle árbol
+            document.querySelectorAll('.tree-toggle').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const item = this.closest('.tree-item');
+                    const children = item.querySelector('.tree-children');
+                    const icon = this.querySelector('svg');
+
+                    if (children) {
+                        children.classList.toggle('expanded');
+                        icon.classList.toggle('rotate-90');
+                    }
+                });
+            });
+
+            // Click en proyecto
+            document.querySelectorAll('[data-type="proyecto"]').forEach(item => {
+                item.addEventListener('click', function (e) {
+                    if (e.target.closest('.tree-toggle')) return;
+                    if (e.target.closest('[data-type="elemento"]')) return; // Ignorar clicks en elementos
+
+                    const proyectoId = this.dataset.id;
+
+                    // Activar proyecto
+                    document.querySelectorAll('[data-type="proyecto"]').forEach(p => p.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Cargar datos
+                    loadProyectoData(proyectoId);
+                });
+            });
+
+            // Cargar datos del proyecto
+            async function loadProyectoData(proyectoId) {
+                document.getElementById('emptyState').classList.add('hidden');
+                document.getElementById('projectContent').classList.remove('hidden');
+
+                // Mostrar loading
+                document.getElementById('mapLoading').style.display = 'flex';
+                document.getElementById('chartLoading').style.display = 'flex';
+
+                try {
+                    const response = await fetch(`/gestor/proyecto/proyecto-data/?proyecto_id=${proyectoId}`);
+                    const data = await response.json();
+
+                    currentProyecto = data.proyecto;
+                    allElementos = data.elementos_mapa;
+
+                    // Actualizar información del proyecto
+                    document.getElementById('projectName').textContent = data.proyecto.nombre;
+                    document.getElementById('projectCode').textContent = data.proyecto.codigo;
+                    document.getElementById('projectStatus').textContent = data.proyecto.estado_display;
+
+                    // Actualizar KPIs
+                    document.getElementById('kpi1').textContent = data.kpis.total_elementos;
+                    document.getElementById('kpi2').textContent = data.kpis.terminados;
+                    document.getElementById('kpi3').textContent = data.kpis.en_proceso;
+                    document.getElementById('kpi4').textContent = data.kpis.pendientes;
+                    document.getElementById('kpi5').textContent = data.kpis.avance_promedio + '%';
+
+                    // Actualizar mapa
+                    updateMap(data);
+
+                    // Actualizar gráfica
+                    updateChart(data);
+
+                    // Agregar listeners a elementos en el árbol
+                    addElementListeners();
+
+                } catch (error) {
+                    console.error('Error cargando datos:', error);
+                } finally {
+                    // Ocultar loading
+                    document.getElementById('mapLoading').style.display = 'none';
+                    document.getElementById('chartLoading').style.display = 'none';
+                }
+            }
+
+            // Agregar listeners a elementos del árbol
+            function addElementListeners() {
+                document.querySelectorAll('[data-type="elemento"]').forEach(item => {
+                    item.addEventListener('click', function (e) {
+                        e.stopPropagation();
+
+                        const elementoId = this.dataset.id;
+                        const elemento = allElementos.find(el => el.id === elementoId);
+
+                        if (elemento && map) {
+                            // Centrar mapa en el elemento
+                            map.setView([elemento.latitud, elemento.longitud], 18);
+
+                            // Abrir popup del marker
+                            if (elementosMap[elementoId]) {
+                                elementosMap[elementoId].openPopup();
+                            }
+
+                            // Highlight en árbol
+                            document.querySelectorAll('[data-type="elemento"]').forEach(el => el.classList.remove('active'));
+                            this.classList.add('active');
+                        }
+                    });
+                });
+            }
+
+            // Actualizar mapa
+            function updateMap(data) {
+                if (!map) initMap();
+
+                // Limpiar markers anteriores
+                currentMarkers.forEach(marker => map.removeLayer(marker));
+                currentMarkers = [];
+                elementosMap = {};
+
+                const proyecto = data.proyecto;
+                const elementos = data.elementos_mapa;
+
+                // Centrar en proyecto
+                map.setView([proyecto.lat_referencia, proyecto.lon_referencia], 15);
+
+                // Benchmark
+                const benchmarkIcon = L.divIcon({
+                    html: '<div style="background: #3b82f6; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><span style="color: white; font-size: 14px;">🎯</span></div>',
+                    className: '',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                });
+
+                const benchmarkMarker = L.marker([proyecto.lat_referencia, proyecto.lon_referencia], {icon: benchmarkIcon})
+                    .addTo(map)
+                    .bindPopup(`<strong>🎯 ${proyecto.nombre}</strong><br/>Elevación: ${proyecto.elevacion_referencia}m`);
+                currentMarkers.push(benchmarkMarker);
+
+                // Elementos
+                elementos.forEach(elemento => {
+                    const color = getEstadoColor(elemento.estado);
+                    const icon = L.divIcon({
+                        html: `<div style="background: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+                        className: '',
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
+                    });
+
+                    const marker = L.marker([elemento.latitud, elemento.longitud], {icon: icon})
+                        .addTo(map)
+                        .bindPopup(`
+                    <div style="min-width: 200px;">
+                        <strong>${elemento.codigo}</strong><br/>
+                        ${elemento.nombre}<br/>
+                        <span style="background: ${color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px;">
+                            ${elemento.estado_display}
+                        </span>
+                        <br/>Avance: ${elemento.avance.toFixed(0)}%
+                    </div>
+                `);
+
+                    // Evento click en marker
+                    marker.on('click', function () {
+                        highlightElementoInTree(elemento.id);
+                    });
+
+                    currentMarkers.push(marker);
+                    elementosMap[elemento.id] = marker; // Guardar referencia
+                });
+
+                updateVisibleCount();
+                setTimeout(() => map.invalidateSize(), 100);
+            }
+
+            // Highlight elemento en el árbol
+            function highlightElementoInTree(elementoId) {
+                document.querySelectorAll('[data-type="elemento"]').forEach(item => item.classList.remove('active'));
+                const item = document.querySelector(`[data-type="elemento"][data-id="${elementoId}"]`);
+                if (item) {
+                    item.classList.add('active');
+                    item.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+                }
+            }
+
+            // Actualizar contador visible
+            function updateVisibleCount() {
+                const visibleMarkers = currentMarkers.filter(marker => {
+                    return marker.getElement && map.getBounds().contains(marker.getLatLng());
+                });
+                document.getElementById('visibleElementosCount').textContent = allElementos.length;
+            }
+
+            // Filtro por estado
+            document.getElementById('filterEstado').addEventListener('change', function() {
+                const estadoFilter = this.value;
+
+                // Filtrar markers en el mapa
+                currentMarkers.forEach(marker => {
+                    if (marker !== currentMarkers[0]) { // No ocultar benchmark
+                        map.removeLayer(marker);
+                    }
+                });
+
+                // Volver a agregar solo los filtrados
+                allElementos.forEach(elemento => {
+                    if (!estadoFilter || elemento.estado === estadoFilter) {
+                        if (elementosMap[elemento.id]) {
+                            elementosMap[elemento.id].addTo(map);
+                        }
+                    }
+                });
+
+                // Filtrar elementos en el árbol
+                document.querySelectorAll('[data-type="elemento"]').forEach(item => {
+                    const estado = item.dataset.estado;
+                    if (!estadoFilter || estado === estadoFilter) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+
+                updateVisibleCount();
+            });
+
+            // Centrar mapa
+            document.getElementById('btnCenterMap').addEventListener('click', function () {
+                if (currentProyecto) {
+                    map.setView([currentProyecto.lat_referencia, currentProyecto.lon_referencia], 15);
+                }
+            });
+
+            // Actualizar gráfica
+            function updateChart(data) {
+                const isDarkMode = document.documentElement.classList.contains('dark');
+                const textColor = isDarkMode ? '#e5e7eb' : '#374151';
+
+                const labels = data.distribucion_estados.map(d => d.estado);
+                const values = data.distribucion_estados.map(d => d.count);
+                const colors = labels.map(estado => getEstadoColor(estado));
+
+                if (estadosChart) {
+                    estadosChart.destroy();
+                }
+
+                estadosChart = new Chart(document.getElementById('estadosChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: values,
+                            backgroundColor: colors,
+                            borderWidth: 2,
+                            borderColor: isDarkMode ? '#1f2937' : '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    color: textColor,
+                                    padding: 10,
+                                    font: {size: 11}
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Helper: Color por estado
+            function getEstadoColor(estado) {
+                const colors = {
+                    'TERMINADO': '#10b981',
+                    'COLADO': '#10b981',
+                    'ARMADO': 'rgba(241,238,49,0.98)',
+                    'CIMBRADO': '#eb3691',
+                    'EXCAVACION': '#e06306',
+                    'REPLANTEO': '#ff9c00',
+                    'PENDIENTE': '#ef4444'
+                };
+                return colors[estado] || '#64748b';
+            }
+
+            // Búsqueda en árbol
+            document.getElementById('searchTree').addEventListener('input', function (e) {
+                const search = e.target.value.toLowerCase();
+
+                document.querySelectorAll('[data-type="proyecto"]').forEach(proyectoItem => {
+                    const proyectoText = proyectoItem.querySelector('.text-xs.font-medium').textContent.toLowerCase();
+                    let hasVisibleElements = false;
+
+                    // Buscar en elementos
+                    const elementos = proyectoItem.querySelectorAll('[data-type="elemento"]');
+                    elementos.forEach(elementoItem => {
+                        const elementoText = elementoItem.textContent.toLowerCase();
+                        if (elementoText.includes(search)) {
+                            elementoItem.style.display = 'block';
+                            hasVisibleElements = true;
+                        } else {
+                            elementoItem.style.display = 'none';
+                        }
+                    });
+
+                    // Mostrar proyecto si coincide o tiene elementos visibles
+                    if (proyectoText.includes(search) || hasVisibleElements) {
+                        proyectoItem.style.display = 'block';
+                        // Auto-expandir si tiene elementos visibles
+                        if (hasVisibleElements && search) {
+                            const children = proyectoItem.querySelector('.tree-children');
+                            const icon = proyectoItem.querySelector('.tree-toggle svg');
+                            if (children && !children.classList.contains('expanded')) {
+                                children.classList.add('expanded');
+                                icon.classList.add('rotate-90');
+                            }
+                        }
+                    } else {
+                        proyectoItem.style.display = 'none';
+                    }
+                });
+            });
+        </script>
+    {% endblock %}
+{% endblock %}
