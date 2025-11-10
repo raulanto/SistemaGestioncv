@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = 'django-insecure-8en#l3nj+8+22lh0ag-&7vbx@-t4t&ciuz3v)0qf_bl&k42tfr'
 
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = [
     '.vercel.app',
     '.now.sh',
@@ -97,6 +97,11 @@ DATABASES = {
             'sslmode': 'require',
         },
     }
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # }
+
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -159,17 +164,15 @@ UNFOLD = {
     "SITE_URL": "/",
     "SITE_DROPDOWN": [
         {
-            "icon": "diamond",
             "title": _("Unfold theme repository"),
             "link": "https://github.com/unfoldadmin/django-unfold",
         },
         {
-            "icon": "rocket_launch",
+
             "title": _("Turbo boilerplate repository"),
             "link": "https://github.com/unfoldadmin/turbo",
         },
         {
-            "icon": "description",
             "title": _("Technical documentation"),
             "link": "https://unfoldadmin.com/docs/",
         },

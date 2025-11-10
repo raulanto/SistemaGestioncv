@@ -1,0 +1,10 @@
+{% load static unfold humanize %}
+
+{% component "unfold/components/card.html" with title="Total de Proyectos" icon="apartment" %}
+<div class="text-4xl font-extrabold text-primary-600 dark:text-primary-400">
+    {{ total_proyectos }}
+</div>
+<p class="text-sm text-base-500 dark:text-base-400 mt-2">
+    Proyectos registrados en el sistema
+</p>
+{% endcomponent %}

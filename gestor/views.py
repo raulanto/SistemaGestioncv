@@ -15,7 +15,7 @@ from django.contrib.admin import site as admin_site
 from django.core.exceptions import PermissionDenied
 from gestor.models import Proyecto
 from django.utils.translation import gettext_lazy as _
-
+from django.views.generic import FormView, RedirectView
 class ProyectoDashboardView(UnfoldModelAdminViewMixin, TemplateView):
     title = "Dashboard del Proyecto"  # Título que aparece en el header
     permission_required = ()  # Puedes agregar permisos aquí, ej: ("gestor.view_proyecto",)
@@ -388,3 +388,8 @@ def admin_password_change_guard(request):
 
     # Si es superadmin, lo dejamos pasar a la vista de admin real
     return admin_site.password_change(request)
+
+
+class HomeView(RedirectView):
+    pattern_name = "admin:home"
+

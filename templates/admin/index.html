@@ -27,7 +27,7 @@
 
 
         {# ============ HEADER DE BIENVENIDA ============ #}
-<div class="relative text-white rounded-2xl shadow-lg p-8 bg-cover bg-center w-full md:h-64 overflow-hidden"
+<div class="relative text-white rounded-2xl shadow-lg p-8 bg-cover bg-center w-full h-42 md:h-96 overflow-hidden z-0"
      style="background-image: url('{% static "src/img/fondo_login.jpeg" %}');">
     <div class="absolute inset-0 bg-gradient-to-l from-black/10 via-black/20 to-black/90 rounded-2xl"></div>
     <div class="flex items-center justify-between relative z-20">
@@ -35,17 +35,19 @@
             <h1 class="text-3xl font-bold mb-2">
                  Bienvenido, {{ user.get_full_name|default:user.username }}
             </h1>
-            <p class="text-primary-100 text-lg">
+            <p class="text-white font-extrabold  text-4xl">
                 Sistema de Gestión de Obras Civiles
             </p>
         </div>
     </div>
 </div>
-<div class="flex flex-col gap-6 p-6">
+
+<div class="flex flex-col gap-6 p-6 md:-mt-32 ">
+
 
 
     {# ============ ESTADÍSTICAS PRINCIPALES ============ #}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 z-40">
 
         {# Card: Proyectos Activos #}
         <div class="dashboard-card bg-white dark:bg-base-900 rounded-lg shadow-sm border border-base-200 dark:border-base-700 p-6">
@@ -61,6 +63,7 @@
                 de {{ total_proyectos }} totales
             </div>
         </div>
+
 
         {# Card: Elementos #}
         <div class="dashboard-card bg-white dark:bg-base-900 rounded-lg shadow-sm border border-base-200 dark:border-base-700 p-6">
