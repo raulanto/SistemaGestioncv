@@ -11,13 +11,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-8en#l3nj+8+22lh0ag-&7vbx@-t4t&ciuz3v)0qf_bl&k42tfr'
 
 DEBUG = False
-
 ALLOWED_HOSTS = [
     '.vercel.app',
     '.now.sh',
     'localhost',
     '127.0.0.1',
 ]
+
 
 INSTALLED_APPS = [
     "unfold",
@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     "unfold.contrib.simple_history",
     "unfold.contrib.location_field",
     "unfold.contrib.constance",
-
+    "whitenoise.runserver_nostatic",
     "django.contrib.admin",
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -116,13 +116,20 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles', 'static')
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_ROOT = BASE_DIR / "media"
 
 MEDIA_URL = "/media/"
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
