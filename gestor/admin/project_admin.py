@@ -68,7 +68,6 @@ class ProyectoAdmin(ModelAdmin, ImportExportModelAdmin):
                 ('director_obra', 'residente_obra'),
                 ('fecha_inicio', 'fecha_fin_estimada', 'fecha_fin_real'),
                 'presupuesto_total',
-                'estadisticas_card',
             ),
             'classes': ['tab'],
         }),

@@ -9,7 +9,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write('🔄 Actualizando coordenadas UTM...')
 
-        API_BASE = 'http://localhost:8000/api'
+        API_BASE = 'https://api-coorden.vercel.app/api'
         elementos = ElementoConstructivo.objects.all()
 
         # Preparar datos para conversión por lotes
