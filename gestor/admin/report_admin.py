@@ -17,17 +17,10 @@ from unfold.contrib.filters.admin import (
 from gestor.models import ReporteAvance
 from django.db.models import Avg
 from django.shortcuts import redirect
-from django.template.loader import render_to_string
-from ..forms import ReporteAvanceForm
+
+
 @admin.register(ReporteAvance)
 class ReporteAvanceAdmin(ModelAdmin):
-    form = ReporteAvanceForm
-
-    # 2. Inyectar el HTML con los scripts de Leaflet para la vista Edición/Creación
-    change_form_template = "admin/gestor/reporteavance/change_form.html"
-
-    # (Opcional pero recomendado) Inyectar el HTML de los KPIs para la tabla
-    change_list_template = "admin/gestor/reporteavance/change_list.html"
     list_display = [
         # 'id',
         'elemento__codigo',
@@ -220,19 +213,32 @@ class ReporteAvanceAdmin(ModelAdmin):
             )
         return mark_safe('<span class="text-muted">Sin foto cargada</span>')
 
-    @display(description="Ubicación Geográfica")
+    @display(description="Ubicación del Reporte")
     def mapa_ubicacion(self, obj):
         if not obj.latitud or not obj.longitud:
-            return "Coordenadas no registradas en campo."
+            return "Sin ubicación"
 
-        # Pasamos el objeto y nombres únicos para el mapa al template
-        return render_to_string(
-            "admin/gestor/components/mapa_reporte.html",
-            {
-                "obj": obj,
-                "map_id": f"map_reporte_{obj.pk}",
-                "callback_name": f"initMap_{obj.pk}"
-            }
+        return format_html(
+            '''
+            <div id="map-reporte-{}" style="height: 300px; border-radius: 8px;"></div>
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+            <script>
+                var map = L.map('map-reporte-{}').setView([{}, {}], 16);
+                L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png').addTo(map);
+                L.marker([{}, {}]).addTo(map).bindPopup('Reporte: {}');
+            </script>
+            <p style="margin-top: 0.5rem;">
+                <a href="https://www.google.com/maps?q={},{}" target="_blank">
+                    Abrir en Google Maps
+                </a>
+            </p>
+            ''',
+            obj.pk, obj.pk,
+            obj.latitud, obj.longitud,
+            obj.latitud, obj.longitud,
+            obj.elemento.codigo,
+            obj.latitud, obj.longitud
         )
 
     @admin.action(description="✓ Validar reportes seleccionados")
