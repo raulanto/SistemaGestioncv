@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'import_export',
     "crispy_forms",
     "gestor.apps.GestorConfig",
-    'leaflet'
 ]
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 MIDDLEWARE = [
