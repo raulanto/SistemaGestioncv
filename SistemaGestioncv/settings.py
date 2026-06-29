@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = 'django-insecure-8en#l3nj+8+22lh0ag-&7vbx@-t4t&ciuz3v)0qf_bl&k42tfr'
 
-DEBUG = True
+DEBUG = False
 ALLOWED_HOSTS = [
     '.vercel.app',
     '.now.sh',
@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'simple_history',
     'import_export',
     "crispy_forms",
-    "gestor.apps.GestorConfig"
+    "gestor.apps.GestorConfig",
+    'leaflet'
 ]
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 MIDDLEWARE = [

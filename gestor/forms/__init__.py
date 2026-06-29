@@ -1,3 +1,3 @@
 from .login_form import LoginForm
-
-__all__ = ['LoginForm']
+from .reporte_form import ReporteAvanceForm
+__all__ = ['LoginForm', 'ReporteAvanceForm']
