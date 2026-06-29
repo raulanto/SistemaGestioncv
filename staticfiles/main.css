@@ -1,1 +1,3 @@
-@import "tailwindcss";
+@import "tailwindcss" source("../../SistemaGestioncv/");
+@custom-variant dark (&:where(.dark, .dark *));
+
