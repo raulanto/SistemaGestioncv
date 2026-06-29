@@ -12,7 +12,7 @@ from unfold.contrib.filters.admin import (
 from unfold.decorators import display
 
 from gestor.models import PuntoControl
-
+from django.db.models import Avg
 
 @admin.register(PuntoControl)
 class PuntoControlAdmin(ModelAdmin):
@@ -23,7 +23,7 @@ class PuntoControlAdmin(ModelAdmin):
         'elemento_link',
         'equipo_badge',
         'precision_display',
-        'validado_badge',
+        'display_validador',
         'fecha_medicion_display',
     ]
 
@@ -70,7 +70,7 @@ class PuntoControlAdmin(ModelAdmin):
     )
 
     actions = ['validar_puntos']
-
+    change_list_template = "admin/gestor/puntocontrol/change_list.html"
     @display(description="Punto", ordering="numero_punto")
     def numero_punto(self, obj):
         return format_html('<strong>{}</strong>', obj.numero_punto)
@@ -98,6 +98,37 @@ class PuntoControlAdmin(ModelAdmin):
             obj.get_tipo_display()
         )
 
+    def changelist_view(self, request, extra_context=None):
+        response = super().changelist_view(request, extra_context=extra_context)
+
+        if hasattr(response, 'context_data'):
+            cl = response.context_data.get('cl')
+            if cl:
+                # El queryset ya respeta los filtros aplicados en la barra lateral de Unfold
+                queryset = cl.queryset
+
+                # 1. Conteo total de estaciones/puntos
+                total_puntos = queryset.count()
+
+                # 2. Puntos aprobados y validados por el supervisor
+                validados = queryset.filter(validado=True).count()
+
+                # 3. Puntos críticos que requieren revisión urgente
+                pendientes = queryset.filter(validado=False).count()
+
+                # 4. Promedio del error o precisión horizontal del equipo (GPS, Estación Total)
+                precision_stats = queryset.aggregate(Avg('precision_horizontal'))
+                avg_precision_h = precision_stats['precision_horizontal__avg'] or 0
+
+                # Enviar las variables calculadas al contexto de la vista HTML
+                response.context_data.update({
+                    'kpi_total_puntos': total_puntos,
+                    'kpi_validados': validados,
+                    'kpi_pendientes': pendientes,
+                    'kpi_precision_h': round(avg_precision_h, 2),
+                })
+
+        return response
     @display(description="Proyecto")
     def proyecto_link(self, obj):
         url = reverse('admin:gestor_proyecto_change', args=[obj.proyecto.pk])
@@ -142,31 +173,54 @@ class PuntoControlAdmin(ModelAdmin):
             )
         return mark_safe('<span class="text-muted">No especificada</span>')
 
-    @display(description="Validado", ordering="validado")
-    def validado_badge(self, obj):
+    # Mantenemos la optimización de base de datos intacta
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related("validado_por", "elemento", "proyecto")
 
+    # 1. Agregamos header=True al decorador
+    @display(description="Control de Calidad", header=True)
+    def display_validador(self, obj):
         if obj.validado:
+            user = obj.validado_por
+            if user:
+                # Obtenemos nombre completo o username
+                nombre = user.get_full_name() or user.username
+                # Calculamos iniciales automáticas (Ej: "Raul Antonio" -> "RA")
+                partes = nombre.split()
+                iniciales = "".join(p[0] for p in partes[:2]).upper() if partes else "US"
+            else:
+                nombre = "Aprobado por Sistema"
+                iniciales = "SY"
 
-            context = {
-                'text': 'Validado',
-                'type': 'success',
-                'icon': 'heroicons.outline.check-circle'
+            # 2. Retornamos la estructura estricta de 4 posiciones de Unfold
+            return [
+                nombre,  # Posición 0: Título Principal en negritas
+                "Aprobado Técnico",  # Posición 1: Subtítulo en gris claro
+                iniciales,  # Posición 2: Iniciales (se usan si no hay foto)
+                {  # Posición 3: Diccionario de configuración de imagen
+                    # Si los usuarios tuvieran un campo de foto (ej. user.perfil.foto.url)
+                    # lo pondrías en 'path'. Al poner None, Unfold dibujará un círculo de
+                    # color moderno con las iniciales dentro.
+                    "path": None,
+                    "height": 24,  # Tamaño del avatar (se recomienda 24 o 32)
+                    "width": 24,
+                    "borderless": False,
+                }
+            ]
+
+        # 3. Estado de interfaz cuando el punto aún no se aprueba
+        return [
+            "En Espera",
+            "Por Validar",
+            "?",
+            {
+                "path": None,
+                "height": 24,
+                "width": 24,
+                "borderless": True,
             }
-        else:
-
-            context = {
-                'text': 'Pendiente',
-                'type': 'warning',
-                'icon': 'heroicons.outline.clock'
-            }
-
-        html_badge = render_to_string(
-            "unfold/helpers/label.html",
-            context
-        )
-
-        return format_html("{}", html_badge)
-
+        ]
     @display(description="Fecha", ordering="fecha_medicion")
     def fecha_medicion_display(self, obj):
         return format_html(

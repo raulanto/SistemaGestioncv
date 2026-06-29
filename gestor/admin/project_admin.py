@@ -11,7 +11,7 @@ from unfold.contrib.filters.admin import (
     ChoicesDropdownFilter,
 )
 from unfold.decorators import display
-
+from django.db.models import Count
 from gestor.models import Proyecto
 from gestor.views import ProyectoDashboardView, ProyectoMapsView, ProyectoExplorerView, ProyectoDataAPIView
 from .resorce import ProyectoResource
@@ -29,6 +29,7 @@ class ProyectoAdmin(ModelAdmin, ImportExportModelAdmin):
         'avance_display',
         'presupuesto_display',
         'dias_restantes',
+        'display_elementos_count'
     ]
     list_filter_submit = True
 
@@ -78,6 +79,22 @@ class ProyectoAdmin(ModelAdmin, ImportExportModelAdmin):
     )
 
     actions = ['exportar_dashboard', 'calcular_volumenes']
+
+    @display(description="Elementos")
+    def display_elementos_count(self, instance: Proyecto):
+        # Tomamos el valor precalculado desde el queryset anotado
+        total = getattr(instance, 'total_elementos', 0)
+
+        if total == 0:
+            return "-"
+
+        return f"{total} elementos"
+
+    # OPTIMIZACIÓN CRÍTICA: Agregación a nivel de base de datos
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # Hace un único conteo por renglón en SQL en lugar de evaluar bucles en Python
+        return qs.annotate(total_elementos=Count('elementos'))
 
     @display(description='Codigo',ordering='codigo')
     def codigo_link(self, obj):

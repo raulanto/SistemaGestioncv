@@ -15,7 +15,7 @@ from unfold.decorators import display
 from django.template.loader import render_to_string
 from gestor.models import ElementoConstructivo
 from .resorce import ElementoResource
-
+from django.db.models import Avg, Sum
 
 @admin.register(ElementoConstructivo)
 class ElementoConstructivoAdmin(ModelAdmin, ImportExportModelAdmin):
@@ -87,6 +87,41 @@ class ElementoConstructivoAdmin(ModelAdmin, ImportExportModelAdmin):
         }),
     )
 
+    change_list_template = "admin/gestor/elementoconstructivo/change_list.html"
+
+    def changelist_view(self, request, extra_context=None):
+        # 2. Llamar a la vista original para obtener la respuesta y su contexto
+        response = super().changelist_view(request, extra_context=extra_context)
+
+        # 3. Interceptar el contexto (si la petición cargó correctamente la página)
+        if hasattr(response, 'context_data'):
+            cl = response.context_data.get('cl')
+            if cl:
+                # Utilizar el queryset YA FILTRADO del ChangeList
+                queryset = cl.queryset
+
+                # 4. Calcular métricas reales con los campos de tu modelo
+                total = queryset.count()
+                terminados = queryset.filter(estado='TERMINADO').count()
+
+                agrupaciones = queryset.aggregate(
+                    Avg('porcentaje_avance'),
+                    Sum('volumen_proyecto')
+                )
+
+                avance_promedio = agrupaciones['porcentaje_avance__avg'] or 0
+                volumen_total = agrupaciones['volumen_proyecto__sum'] or 0
+
+                # 5. Inyectar los resultados como variables en extra_context
+                response.context_data.update({
+                    'kpi_total': total,
+                    'kpi_terminados': terminados,
+                    'kpi_avance_promedio': round(avance_promedio, 2),
+                    'kpi_volumen_total': round(volumen_total, 2),
+                })
+
+        return response
+
     # list_before_template = "proyecto/list_before_template.html"
     # list_after_template = "proyecto/list_after_template.html"
 
@@ -104,7 +139,7 @@ class ElementoConstructivoAdmin(ModelAdmin, ImportExportModelAdmin):
             obj.codigo
         )
 
-    # Asegúrate de tener estas importaciones al inicio de tu admin.py
+
     from django.utils.html import format_html
     from django.template.loader import render_to_string
     from django.contrib import admin

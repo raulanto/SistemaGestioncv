@@ -7,7 +7,9 @@ from .cuadrilla_model import Cuadrilla
 from .audited_model import AuditedModel
 
 class ReporteAvance(AuditedModel):
-    """Reportes diarios de avance con evidencia fotográfica"""
+    """
+    Reportes diarios de avance con evidencia fotográfica
+    """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     elemento = models.ForeignKey(
         ElementoConstructivo,
