@@ -112,7 +112,7 @@ def dashboard_callback(request, context):
 
     # ============ CUADRILLAS ============
     total_cuadrillas = Cuadrilla.objects.count()
-    cuadrillas_activas = Cuadrilla.objects.filter(activa=True).count()
+    cuadrillas_activas = Cuadrilla.objects.filter(estado=Cuadrilla.EstadoCuadrilla.ACTIVA).count()
 
     # ============ REPORTES ============
     hace_semana = timezone.now() - timedelta(days=7)

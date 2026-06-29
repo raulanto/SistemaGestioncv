@@ -8,16 +8,26 @@ from unfold.admin import ModelAdmin
 from unfold.contrib.filters.admin import (
     RangeDateFilter,
 )
-from unfold.decorators import display
+from unfold.decorators import display,action
 from unfold.contrib.filters.admin import (
     RangeDateFilter,
     RangeNumericFilter,
     ChoicesDropdownFilter,
 )
 from gestor.models import ReporteAvance
-
+from django.db.models import Avg
+from django.shortcuts import redirect
+from django.template.loader import render_to_string
+from ..forms import ReporteAvanceForm
 @admin.register(ReporteAvance)
 class ReporteAvanceAdmin(ModelAdmin):
+    form = ReporteAvanceForm
+
+    # 2. Inyectar el HTML con los scripts de Leaflet para la vista Edición/Creación
+    change_form_template = "admin/gestor/reporteavance/change_form.html"
+
+    # (Opcional pero recomendado) Inyectar el HTML de los KPIs para la tabla
+    change_list_template = "admin/gestor/reporteavance/change_list.html"
     list_display = [
         # 'id',
         'elemento__codigo',
@@ -92,34 +102,78 @@ class ReporteAvanceAdmin(ModelAdmin):
         }),
     )
 
-    actions = ['validar_reportes', 'exportar_reportes']
+    actions = ['validar_reportes_masivos', 'exportar_reportes']
+    actions_row = ["validar_reporte_fila"]
+    @admin.action(description="✓ Validar reportes seleccionados")
+    def validar_reportes_masivos(self, request, queryset):
+        updated = queryset.update(validado=True, validado_por=request.user)
+        self.message_user(request, f'{updated} reportes validados', 'success')
+
+    @admin.action(description="📄 Exportar reportes a Excel")
+    def exportar_reportes(self, request, queryset):
+        # Tu lógica original de exportación...
+        self.message_user(request, f'{queryset.count()} reportes exportados', 'success')
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # Traemos todas las llaves foráneas en un solo JOIN de SQL
+        return qs.select_related("elemento", "elemento__proyecto", "cuadrilla", "reportado_por", "validado_por")
+
+    def changelist_view(self, request, extra_context=None):
+        response = super().changelist_view(request, extra_context)
+        if hasattr(response, 'context_data') and response.context_data.get('cl'):
+            qs = response.context_data['cl'].queryset
+
+            # Cálculos en BD para los KPIs
+            kpi_total = qs.count()
+            kpi_validados = qs.filter(validado=True).count()
+            kpi_pendientes = qs.filter(validado=False).count()
+            avg = qs.aggregate(Avg('avance_porcentaje'))['avance_porcentaje__avg'] or 0
+
+            response.context_data.update({
+                'kpi_total': kpi_total,
+                'kpi_validados': kpi_validados,
+                'kpi_pendientes': kpi_pendientes,
+                'kpi_avg_avance': round(avg, 1),
+            })
+        return response
 
     @display(description="Elemento")
     def elemento_codigo(self, obj):
         url = reverse('admin:gestor_elementoconstructivo_change', args=[obj.elemento.pk])
-        return format_html('<a href="{}">{}</a>', url, obj.elemento.codigo)
+        return format_html(
+            '<a href="{}" class="font-semibold text-primary-600 dark:text-primary-400 hover:underline">{}</a>',
+            url, obj.elemento.codigo
+        )
 
-    @display(description="Fecha y Hora", ordering="fecha")
+    @display(description="Fecha de Registro", ordering="fecha")
     def fecha_hora_display(self, obj):
         return format_html(
-            '<strong>{}</strong><br/><small>{}</small>',
+            '<div class="flex flex-col">'
+            '<span class="font-medium ">{}</span>'
+            '<span class="text-xs ">{}</span>'
+            '</div>',
             obj.fecha.strftime('%d/%m/%Y'),
             obj.hora.strftime('%H:%M')
         )
 
-    @display(description="Avance", ordering="avance_porcentaje")
+    @display(description="Avance Declarado", ordering="avance_porcentaje")
     def avance_display(self, obj):
-        color = 'success' if obj.avance_porcentaje >= 80 else 'warning' if obj.avance_porcentaje >= 50 else 'info'
+        # Colores Tailwind nativos
+        color_bar = "bg-emerald-500" if obj.avance_porcentaje >= 80 else (
+            "bg-amber-500" if obj.avance_porcentaje >= 50 else "bg-sky-500")
+
         return format_html(
-            '''
-            <div style="min-width: 80px;">
-                <div class="progress" style="height: 18px;">
-                    <div class="progress-bar bg-{}" style="width: {}%">{}%</div>
-                </div>
-                <small class="text-muted">{} unidades</small>
-            </div>
-            ''',
-            color, f'{obj.avance_porcentaje:,.0f}', f'{obj.avance_porcentaje:,.0f}', f'{obj.avance_cantidad:,.0f}'
+            '<div class="flex flex-col gap-1 min-w-[100px]">'
+            '   <div class="flex justify-between items-end text-xs">'
+            '       <span class="font-bold ">{}%</span>'
+            '       <span class=" text-[10px]">{} ud</span>'
+            '   </div>'
+            '   <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">'
+            '       <div class="h-1.5 rounded-full {}" style="width: {}%"></div>'
+            '   </div>'
+            '</div>',
+            f"{obj.avance_porcentaje:,.0f}", f"{obj.avance_cantidad:,.0f}", color_bar, obj.avance_porcentaje
         )
 
     @display(description="Cuadrilla")
@@ -128,24 +182,25 @@ class ReporteAvanceAdmin(ModelAdmin):
             return obj.cuadrilla.nombre
         return format_html('<span class="text-muted">N/A</span>')
 
-    @display(description="Reportado por")
+    @display(description="Reportado Por", header=True)
     def reportado_por_display(self, obj):
+        # Diseño Avatar de Unfold
         if obj.reportado_por:
-            return format_html(
-                '👤 {}',
-                obj.reportado_por.get_full_name() or obj.reportado_por.username
-            )
-        return '-'
+            nombre = obj.reportado_por.get_full_name() or obj.reportado_por.username
+            partes = nombre.split()
+            iniciales = "".join(p[0] for p in partes[:2]).upper() if partes else "OP"
+            return [
+                nombre,
+                "Supervisor de Campo",
+                iniciales,
+                {"path": None, "height": 24, "width": 24}
+            ]
+        return ["Sistema", "Automático", "SY", {"path": None, "height": 24, "width": 24}]
 
-    @display(description="Validado", ordering="validado")
+    @display(description="Calidad", label={"Validado": "success", "Pendiente": "warning"})
     def validado_badge(self, obj):
-        if obj.validado:
-            validador = obj.validado_por.get_full_name() if obj.validado_por else 'Sistema'
-            return format_html(
-                '<span class="badge badge-success" title="Validado por {}">✓</span>',
-                validador
-            )
-        return mark_safe('<span class="badge badge-warning">Pendiente</span>')
+        # Unfold aplica el color y el badge en automático basado en el diccionario
+        return "Validado" if obj.validado else "Pendiente"
 
     @display(description="Foto")
     def ver_foto(self, obj):
@@ -165,32 +220,19 @@ class ReporteAvanceAdmin(ModelAdmin):
             )
         return mark_safe('<span class="text-muted">Sin foto cargada</span>')
 
-    @display(description="Ubicación del Reporte")
+    @display(description="Ubicación Geográfica")
     def mapa_ubicacion(self, obj):
         if not obj.latitud or not obj.longitud:
-            return "Sin ubicación"
+            return "Coordenadas no registradas en campo."
 
-        return format_html(
-            '''
-            <div id="map-reporte-{}" style="height: 300px; border-radius: 8px;"></div>
-            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-            <script>
-                var map = L.map('map-reporte-{}').setView([{}, {}], 16);
-                L.tileLayer('https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png').addTo(map);
-                L.marker([{}, {}]).addTo(map).bindPopup('Reporte: {}');
-            </script>
-            <p style="margin-top: 0.5rem;">
-                <a href="https://www.google.com/maps?q={},{}" target="_blank">
-                    Abrir en Google Maps
-                </a>
-            </p>
-            ''',
-            obj.pk, obj.pk,
-            obj.latitud, obj.longitud,
-            obj.latitud, obj.longitud,
-            obj.elemento.codigo,
-            obj.latitud, obj.longitud
+        # Pasamos el objeto y nombres únicos para el mapa al template
+        return render_to_string(
+            "admin/gestor/components/mapa_reporte.html",
+            {
+                "obj": obj,
+                "map_id": f"map_reporte_{obj.pk}",
+                "callback_name": f"initMap_{obj.pk}"
+            }
         )
 
     @admin.action(description="✓ Validar reportes seleccionados")
@@ -205,3 +247,21 @@ class ReporteAvanceAdmin(ModelAdmin):
     def exportar_reportes(self, request, queryset):
         # Implementar exportación
         self.message_user(request, f'{queryset.count()} reportes exportados', 'success')
+
+
+
+
+    @action(description="Validar ✓")
+    def validar_reporte_fila(self, request, object_id):
+        obj = self.get_object(request, object_id)
+
+        if obj and not obj.validado:
+            obj.validado = True
+            obj.validado_por = request.user
+            obj.save()
+            self.message_user(request, f"Reporte {obj.elemento.codigo} validado.", "success")
+        elif obj and obj.validado:
+            self.message_user(request, "Este reporte ya estaba validado.", "warning")
+
+        # SOLUCIÓN: Redirigir al usuario de vuelta a la página desde la que hizo clic
+        return redirect(request.META.get('HTTP_REFERER', 'admin:gestor_reporteavance_changelist'))

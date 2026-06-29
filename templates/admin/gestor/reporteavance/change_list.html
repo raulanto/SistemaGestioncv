@@ -1,0 +1,53 @@
+{% extends "admin/change_list.html" %}
+{% load i18n unfold leaflet_tags %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {% leaflet_js %}
+    {% leaflet_css %}
+
+    <style>
+        /* Corrección de UI: Evita que el mapa flote por encima de los menús desplegables de Unfold */
+        .leaflet-container { z-index: 1 !important; }
+    </style>
+{% endblock %}
+
+{% block result_list %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
+        {% component "unfold/components/card.html" with title="Reportes Emitidos" label="Histórico" %}
+            <p class="text-3xl font-bold ">
+                {{ kpi_total }}
+            </p>
+        {% endcomponent %}
+
+        {% component "unfold/components/card.html" with title="Auditoría Pendiente" label="Por Validar" %}
+            <div class="flex items-center gap-2">
+                <p class="text-3xl font-bold text-amber-600 dark:text-amber-400">
+                    {{ kpi_pendientes }}
+                </p>
+                {% if kpi_pendientes > 0 %}
+                <span class="relative flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                </span>
+                {% endif %}
+            </div>
+        {% endcomponent %}
+
+        {% component "unfold/components/card.html" with title="Aprobados Técnicos" label="Validados" %}
+            <p class="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+                {{ kpi_validados }}
+            </p>
+        {% endcomponent %}
+
+        {% component "unfold/components/card.html" with title="Avance de Estimaciones" label="Promedio" %}
+            <p class="text-3xl font-bold text-sky-600 dark:text-sky-400">
+                {{ kpi_avg_avance }}%
+            </p>
+        {% endcomponent %}
+
+    </div>
+
+    {{ block.super }}
+{% endblock %}

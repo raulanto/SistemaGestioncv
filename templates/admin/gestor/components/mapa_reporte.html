@@ -1,0 +1,31 @@
+{% load leaflet_tags %}
+
+<div class="rounded-xl overflow-hidden shadow-sm border  max-w-2xl my-2">
+
+    <div style="height: 320px; width: 100%; z-index: 1;">
+        {% leaflet_map map_id callback=callback_name %}
+    </div>
+
+    <div class=" p-3 flex justify-between items-center border-t ">
+        <span class="text-xs  font-mono">{{ obj.latitud }}, {{ obj.longitud }}</span>
+        <a href="https://maps.google.com/?q={{ obj.latitud }},{{ obj.longitud }}" target="_blank" class="text-sm font-semibold text-primary-600 hover:text-primary-700 flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">open_in_new</span> Abrir en Maps
+        </a>
+    </div>
+</div>
+
+<script>
+    // Se ejecuta automáticamente cuando django-leaflet carga el mapa
+    window['{{ callback_name }}'] = function (map, options) {
+        var lat = parseFloat("{{ obj.latitud|escapejs }}");
+        var lng = parseFloat("{{ obj.longitud|escapejs }}");
+
+        // Centrar mapa
+        map.setView([lat, lng], 17);
+
+        // Agregar marcador personalizado
+        L.marker([lat, lng])
+         .addTo(map)
+         .bindPopup('<b>{{ obj.elemento.codigo|escapejs }}</b><br>Avance reportado aquí.');
+    };
+</script>
