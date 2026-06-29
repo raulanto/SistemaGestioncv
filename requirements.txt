@@ -9,7 +9,7 @@ django-crispy-forms==2.4
 django-humanize==0.1.2
 django-import-export==4.3.13
 django-simple-history==3.10.1
-django-unfold==0.69.0
+django-unfold==0.99.0
 gunicorn==23.0.0
 humanize==4.14.0
 idna==3.11
