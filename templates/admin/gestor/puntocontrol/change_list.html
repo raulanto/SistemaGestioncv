@@ -1,0 +1,39 @@
+{% extends "admin/change_list.html" %}
+{% load i18n unfold %}
+
+{% block result_list %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        
+        {% component "unfold/components/card.html" with title="Puntos Levantados" label="Total" %}
+            <p class="text-3xl font-semibold">
+                {{ kpi_total_puntos }}
+            </p>
+        {% endcomponent %}
+
+        {% component "unfold/components/card.html" with title="Estaciones Validadas" label="Aprobadas" %}
+            <p class="text-3xl font-semibold text-emerald-600 dark:text-emerald-400">
+                {{ kpi_validados }}
+            </p>
+        {% endcomponent %}
+
+        {% component "unfold/components/card.html" with title="Por Validar" label="Revisión" %}
+            <p class="text-3xl font-semibold text-amber-500 dark:text-amber-400">
+                {{ kpi_pendientes }}
+            </p>
+        {% endcomponent %}
+
+        {% component "unfold/components/card.html" with title="Precisión H. Promedio" label="Tolerancia" %}
+            <div class="flex items-baseline gap-1">
+                <span class="text-3xl font-semibold text-sky-600 dark:text-sky-400">
+                    {{ kpi_precision_h }}
+                </span>
+                <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    cm
+                </span>
+            </div>
+        {% endcomponent %}
+
+    </div>
+
+    {{ block.super }}
+{% endblock %}
