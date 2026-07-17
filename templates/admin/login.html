@@ -3,219 +3,229 @@
 {% load crispy_forms_tags unfold static %}
 
 {% block base %}
-    <div class="relative min-h-screen flex">
+<div class="relative min-h-screen flex bg-white dark:bg-base-950">
 
-        <!-- Lado Izquierdo - Carrusel -->
-        <div class="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-            <!-- Imagen de fondo del carrusel -->
-            <div class="absolute inset-0">
-                <img id="carousel-image"
-                     class="w-full h-full object-cover object-center transition-opacity duration-700"
-                     src="{% static 'src/app/img4.png' %}"
-                     alt="Slide"/>
-                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-            </div>
-            <div class="relative z-10 flex flex-col justify-center items-center w-full p-12">
-                <div class="max-w-2xl w-full p-6 sm:p-10 backdrop-blur-md backdrop-filter bg-black/35 rounded-3xl">
-                    <div id="carousel-content" class="transition-opacity duration-500">
+    <!-- ============ IZQUIERDA: FORM (minimalista) ============ -->
+    <div class="w-full lg:w-[45%] flex items-center justify-center px-8 py-12 relative">
 
-                        <div class="carousel-slide active">
-                            <h5 class="text-3xl text-white font-semibold mb-2">Sistema de Gestión de Obras Civiles </h5>
-                            <span class="block text-sm text-white font-semibold mb-6">SGOC</span>
-                            <p class="max-w-xl text-xl text-white font-medium">Administra proyectos de construcción con
-                                información detallada: ubicación, cliente, presupuesto y estado en tiempo real.</p>
-                        </div>
-                        <div class="carousel-slide hidden">
-                            <h5 class="text-3xl text-white font-semibold mb-2">Reportes de Avance</h5>
-                            <span class="block text-sm text-white font-semibold mb-6">SGOC</span>
-                            <p class="max-w-xl text-xl text-white font-medium">Documenta el progreso con porcentajes,
-                                observaciones, fotos y coordinación de cuadrillas asignadas.</p>
-                        </div>
+        <div class="w-full max-w-sm">
 
-                        <div class="carousel-slide hidden">
-                            <h5 class="text-3xl text-white font-semibold mb-2">Elementos Constructivos</h5>
-                            <span class="block text-sm text-white font-semibold mb-6">SGOC</span>
-                            <p class="max-w-xl text-xl text-white font-medium">Organiza y controla cada componente del
-                                proyecto con estructura jerárquica y seguimiento de progreso individual.</p>
-                        </div>
-
-
-                    </div>
-
-                    <div class="flex justify-center gap-3 mt-12">
-                        <button onclick="changeSlide(0)"
-                                class="carousel-indicator h-1.5 w-12 bg-blue-500 rounded-full transition-all duration-300 cursor-pointer hover:bg-blue-400">
-                        </button>
-                        <button onclick="changeSlide(1)"
-                                class="carousel-indicator h-1.5 w-12 bg-white/30 rounded-full transition-all duration-300 cursor-pointer hover:bg-white/50">
-                        </button>
-                        <button onclick="changeSlide(2)"
-                                class="carousel-indicator h-1.5 w-12 bg-white/30 rounded-full transition-all duration-300 cursor-pointer hover:bg-white/50">
-                        </button>
-                    </div>
+            <!-- Logo -->
+            <div class="flex items-center gap-3 mb-16">
+                <div class="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                         class="h-5 w-5 text-white stroke-current stroke-[2.5]">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
                 </div>
+                <span class="text-lg font-bold text-base-900 dark:text-white tracking-tight">SGOC</span>
             </div>
 
+            {% include "unfold/helpers/unauthenticated_header.html" %}
 
-        </div>
-
-
-        <div class="w-full lg:w-1/2 flex items-center justify-center relative bg-cover bg-center bg-fixed"
-             style="background-image: url('{% static "src/img/fondo_login.jpeg" %}');">
-
-
-            <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-black/80 to-black">
-
+            <div class="mb-10">
+                <h1 class="text-3xl font-bold text-base-900 dark:text-white mb-2 tracking-tight">
+                    Bienvenido de vuelta
+                </h1>
+                <p class="text-base-500 dark:text-base-400 text-sm">
+                    Ingresa tus credenciales para acceder al sistema.
+                </p>
             </div>
 
-            <div class="absolute h-full w-full">
+            <form action="{{ app_path }}" method="post" id="login-form" class="space-y-5">
+                {% csrf_token %}
 
-                <div class="absolute bottom-0 left-0 right-0 top-0
-                bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:14px_24px]
-                [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]">
-                </div>
-            </div>
-
-            <div class="relative z-10 w-full max-w-md px-8 py-12">
-                {% include "unfold/helpers/unauthenticated_header.html" %}
-
-
-                <div class="flex justify-center mb-8">
-                    <div class="h-24 w-24 rounded-full bg-gradient-to-br from-blue-500 via-blue-600 to-blue-300 flex items-center justify-center shadow-xl shadow-blue-500/30">
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                             fill="none"
-                             viewBox="0 0 24 24"
-                             class="h-12 w-12 text-white stroke-current stroke-2">
-                            <path stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
-                            </path>
-                        </svg>
+                <div>
+                    <label class="block text-sm font-medium text-base-700 dark:text-base-300 mb-1.5">
+                        Usuario
+                    </label>
+                    <div class="relative">
+                        {{ form.username }}
                     </div>
                 </div>
 
-
-                <div class="text-center mb-10">
-                    <h1 class="text-3xl font-bold text-white mb-3">Bienvenido de vuelta</h1>
-                    <p class="text-gray-400">Ingresa tus credenciales para continuar</p>
-                </div>
-
-                <form action="{{ app_path }}" method="post" id="login-form" class="space-y-6">
-                    {% csrf_token %}
-
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Usuario</label>
-                        <div class="relative">
-                            {{ form.username }}
-                        </div>
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-sm font-medium text-base-700 dark:text-base-300">
+                            Contraseña
+                        </label>
+                        <a href="#" class="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                            ¿Olvidaste tu contraseña?
+                        </a>
                     </div>
-
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Contraseña</label>
-                        <div class="relative">
-                            {{ form.password }}
-                        </div>
-                    </div>
-
-                    <div class="pt-4">
-                        {% component "unfold/components/button.html" with type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors duration-200" %}
-                            {{ form.submit.value|default:"Iniciar Sesión" }}
-                        {% endcomponent %}
-                    </div>
-                </form>
-            </div>
-            <div id="gdpr"
-                 class="bg-white dark:bg-base-900 fixed z-50 p-3 py-4 rounded-full drop-shadow-2xl bottom-12 left-1/2 -translate-x-1/2 max-sm:w-11/12">
-                <div class="flex items-center justify-between gap-6 text-sm">
-                    <div class="content-left pl-4">
-                        Solicitar Acceso al Sistema
-                    </div>
-                    <div class="content-right text-end">
-                        <a href="https://portafolio-rauantodev.vercel.app/"  class="bg-primary-500 text-white px-4 py-2 cursor-pointer rounded-full">Solicitar</a>
+                    <div class="relative">
+                        {{ form.password }}
                     </div>
                 </div>
+
+                <div class="pt-3">
+                    {% component "unfold/components/button.html" with type="submit" class="w-full" %}
+                        {{ form.submit.value|default:"Iniciar Sesión" }}
+                    {% endcomponent %}
+                </div>
+            </form>
+
+            <div class="mt-10 pt-6 border-t border-base-100 dark:border-base-800 flex items-center justify-between text-xs text-base-400">
+                <span>© 2025 SGOC</span>
+                <a href="#" class="hover:text-base-600 dark:hover:text-base-300 transition-colors">Aviso de Privacidad</a>
             </div>
         </div>
-
     </div>
 
+    <!-- ============ DERECHA: CARRUSEL (visual) ============ -->
+    <div class="hidden lg:block lg:w-[55%] relative overflow-hidden m-3 rounded-3xl">
 
+        <!-- Imagen de fondo -->
+        <div class="absolute inset-0">
+            <img id="carousel-image"
+                 class="w-full h-full object-cover object-center transition-opacity duration-700"
+                 src="{% static 'src/app/img4.png' %}"
+                 alt="Slide"/>
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-950/20"></div>
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-950/40 via-transparent to-transparent"></div>
+        </div>
 
-    <script>
-        let currentSlide = 0;
-        const totalSlides = 3;
-        let autoPlayInterval;
+        <!-- Contenido -->
+        <div class="relative z-10 h-full flex flex-col justify-end p-10">
 
-        // Array de imágenes - PERSONALIZA ESTAS RUTAS CON TUS IMÁGENES
-        const slideImages = [
-            "{% static 'src/app/img4.png' %}",
-            "{% static 'src/app/img5.png' %}",
-            "{% static 'src/app/img6.png' %}"
-        ];
+            <div id="carousel-content" class="mb-8">
+                <div class="carousel-slide active">
+                    <h5 class="text-4xl text-white font-bold mb-3 tracking-tight leading-tight">
+                        Gestión de Obras Civiles
+                    </h5>
+                    <p class="text-lg text-white/70 font-normal max-w-md leading-relaxed">
+                        Administra proyectos con información detallada: ubicación, cliente,
+                        presupuesto y estado en tiempo real.
+                    </p>
+                </div>
+                <div class="carousel-slide hidden">
+                    <h5 class="text-4xl text-white font-bold mb-3 tracking-tight leading-tight">
+                        Reportes de Avance
+                    </h5>
+                    <p class="text-lg text-white/70 font-normal max-w-md leading-relaxed">
+                        Documenta el progreso con porcentajes, observaciones, fotos
+                        y coordinación de cuadrillas asignadas.
+                    </p>
+                </div>
+                <div class="carousel-slide hidden">
+                    <h5 class="text-4xl text-white font-bold mb-3 tracking-tight leading-tight">
+                        Elementos Constructivos
+                    </h5>
+                    <p class="text-lg text-white/70 font-normal max-w-md leading-relaxed">
+                        Organiza cada componente del proyecto con estructura jerárquica
+                        y seguimiento de progreso individual.
+                    </p>
+                </div>
+            </div>
 
-        function changeSlide(index) {
-            const slides = document.querySelectorAll('.carousel-slide');
-            const indicators = document.querySelectorAll('.carousel-indicator');
-            const image = document.getElementById('carousel-image');
+            <!-- Badges flotantes (estilo referencia) -->
+            <div id="carousel-badges" class="flex flex-wrap gap-2 mb-8">
+                <span class="badge-item flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-white text-sm font-medium">
+                     Ubicación GPS
+                </span>
+                <span class="badge-item flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-white text-sm font-medium">
+                     Presupuestos
+                </span>
+                <span class="badge-item flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-white text-sm font-medium">
+                     Estado en vivo
+                </span>
+            </div>
 
-            // Remover estado activo del slide actual
-            slides[currentSlide].classList.remove('active');
-            slides[currentSlide].classList.add('hidden');
+            <!-- Indicadores -->
+            <div class="flex gap-2">
+                <button onclick="changeSlide(0)"
+                        class="carousel-indicator h-1 w-10 bg-blue-500 rounded-full transition-all duration-300 cursor-pointer hover:bg-blue-400">
+                </button>
+                <button onclick="changeSlide(1)"
+                        class="carousel-indicator h-1 w-10 bg-white/25 rounded-full transition-all duration-300 cursor-pointer hover:bg-white/40">
+                </button>
+                <button onclick="changeSlide(2)"
+                        class="carousel-indicator h-1 w-10 bg-white/25 rounded-full transition-all duration-300 cursor-pointer hover:bg-white/40">
+                </button>
+            </div>
+        </div>
+    </div>
 
-            // Remover estado activo del indicador actual
-            indicators[currentSlide].classList.remove('bg-blue-500', 'w-12');
-            indicators[currentSlide].classList.add('bg-white/30', 'w-12');
+    <!-- CTA flotante -->
+    <div id="gdpr"
+         class="bg-white dark:bg-base-900 fixed z-50 px-5 py-3 rounded-full drop-shadow-2xl bottom-8 left-1/2 -translate-x-1/2 max-sm:w-11/12 border border-base-100 dark:border-base-800">
+        <div class="flex items-center justify-between gap-6 text-sm">
+            <span class="text-base-600 dark:text-base-300">¿Necesitas acceso al sistema?</span>
+            <a href="https://portafolio-rauantodev.vercel.app/"
+               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-full transition-colors font-medium">
+                Solicitar
+            </a>
+        </div>
+    </div>
+</div>
 
-            // Actualizar índice
-            currentSlide = index;
+<script>
+    let currentSlide = 0;
+    const totalSlides = 3;
+    let autoPlayInterval;
 
-            // Activar nuevo slide
-            slides[currentSlide].classList.remove('hidden');
-            slides[currentSlide].classList.add('active');
+    const slideImages = [
+        "{% static 'src/app/img4.png' %}",
+        "{% static 'src/app/img5.png' %}",
+        "{% static 'src/app/img6.png' %}"
+    ];
 
-            // Activar nuevo indicador
-            indicators[currentSlide].classList.remove('bg-white/30');
-            indicators[currentSlide].classList.add('bg-blue-500');
+    // Badges por slide (opcional: personaliza según lo que muestre cada captura)
+    const slideBadges = [
+        [' Ubicación GPS', ' Presupuestos', ' Estado en vivo'],
+        ['Evidencia fotográfica', ' Cuadrillas', '% de avance'],
+        [' Jerarquía de obra', ' Seguimiento', ' Actualización live']
+    ];
 
-            // Cambiar imagen con efecto fade
-            image.style.opacity = '0.3';
-            setTimeout(() => {
-                image.src = slideImages[currentSlide];
-                image.style.opacity = '1';
-            }, 350);
+    function changeSlide(index) {
+        const slides = document.querySelectorAll('.carousel-slide');
+        const indicators = document.querySelectorAll('.carousel-indicator');
+        const image = document.getElementById('carousel-image');
+        const badgeContainer = document.getElementById('carousel-badges');
 
-            // Reiniciar autoplay
-            resetAutoPlay();
-        }
+        slides[currentSlide].classList.remove('active');
+        slides[currentSlide].classList.add('hidden');
 
-        function nextSlide() {
-            const next = (currentSlide + 1) % totalSlides;
-            changeSlide(next);
-        }
+        indicators[currentSlide].classList.remove('bg-blue-500');
+        indicators[currentSlide].classList.add('bg-white/25');
 
-        function resetAutoPlay() {
-            clearInterval(autoPlayInterval);
-            autoPlayInterval = setInterval(nextSlide, 6000); // Cambia cada 6 segundos
-        }
+        currentSlide = index;
 
-        // Iniciar autoplay cuando carga la página
-        document.addEventListener('DOMContentLoaded', function () {
-            resetAutoPlay();
-        });
+        slides[currentSlide].classList.remove('hidden');
+        slides[currentSlide].classList.add('active');
 
-        // Pausar el autoplay cuando el usuario pasa el mouse sobre el carrusel
-        const carouselSection = document.querySelector('.lg\\:w-1\\/2');
-        if (carouselSection) {
-            carouselSection.addEventListener('mouseenter', () => {
-                clearInterval(autoPlayInterval);
-            });
+        indicators[currentSlide].classList.remove('bg-white/25');
+        indicators[currentSlide].classList.add('bg-blue-500');
 
-            carouselSection.addEventListener('mouseleave', () => {
-                resetAutoPlay();
-            });
-        }
-    </script>
+        image.style.opacity = '0.3';
+        setTimeout(() => {
+            image.src = slideImages[currentSlide];
+            image.style.opacity = '1';
+        }, 350);
 
+        badgeContainer.innerHTML = slideBadges[currentSlide]
+            .map(b => `<span class="badge-item flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-white text-sm font-medium">${b}</span>`)
+            .join('');
+
+        resetAutoPlay();
+    }
+
+    function nextSlide() {
+        changeSlide((currentSlide + 1) % totalSlides);
+    }
+
+    function resetAutoPlay() {
+        clearInterval(autoPlayInterval);
+        autoPlayInterval = setInterval(nextSlide, 6000);
+    }
+
+    document.addEventListener('DOMContentLoaded', resetAutoPlay);
+
+    const carouselSection = document.querySelector('.lg\\:w-\\[55\\%\\]');
+    if (carouselSection) {
+        carouselSection.addEventListener('mouseenter', () => clearInterval(autoPlayInterval));
+        carouselSection.addEventListener('mouseleave', resetAutoPlay);
+    }
+</script>
 {% endblock %}
