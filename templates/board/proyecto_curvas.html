@@ -1,0 +1,236 @@
+{% extends 'unfold/layouts/base.html' %}
+{% load i18n unfold %}
+
+{% block breadcrumbs %}
+<div class="px-4 lg:px-12 flex items-center gap-2 text-sm text-base-500 dark:text-base-400 mt-4 mb-4">
+    <a href="{% url 'admin:index' %}" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+    </a>
+    <span>/</span>
+    <a href="{% url 'admin:gestor_proyecto_changelist' %}" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Proyectos</a>
+    <span>/</span>
+    <a href="{% url 'admin:gestor_proyecto_change' proyecto.pk %}" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">{{ proyecto.codigo }}</a>
+    <span>/</span>
+    <span class="text-base-900 dark:text-base-100 font-medium">Curva S</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="px-4 lg:px-12 pb-8">
+    
+    <!-- Encabezado -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-base-900 dark:text-base-100 flex items-center gap-3">
+                <div class="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg text-primary-600 dark:text-primary-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                    </svg>
+                </div>
+                Curva S de Avance
+            </h1>
+            <p class="text-base-500 dark:text-base-400 mt-1">Comparativa Planeado vs. Físico Real vs. Financiero</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'admin:gestor_proyecto_change' proyecto.pk %}" 
+               class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg
+                      bg-white dark:bg-base-800 border border-base-200 dark:border-base-700
+                      text-base-700 dark:text-base-300 hover:bg-base-50 dark:hover:bg-base-800/50">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Volver al Proyecto
+            </a>
+        </div>
+    </div>
+
+    <!-- KPIs Financieros -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- KPI 1: Presupuesto Contratado -->
+        <div class="bg-white dark:bg-base-900 rounded-xl border border-base-200 dark:border-base-800 p-6 shadow-sm">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-sm font-medium text-base-500 dark:text-base-400 mb-1">Presupuesto Total</p>
+                    <h3 class="text-2xl font-bold text-base-900 dark:text-base-100">${{ kpi_presupuesto|floatformat:2 }}</h3>
+                </div>
+                <div class="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI 2: Avance Físico Valorado -->
+        <div class="bg-white dark:bg-base-900 rounded-xl border border-base-200 dark:border-base-800 p-6 shadow-sm">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-sm font-medium text-base-500 dark:text-base-400 mb-1">Avance Físico Real</p>
+                    <h3 class="text-2xl font-bold text-base-900 dark:text-base-100">${{ kpi_fisico|floatformat:2 }}</h3>
+                    <p class="text-xs text-green-600 dark:text-green-400 mt-1 font-medium">
+                        {{ pct_fisico|floatformat:1 }}% del Presupuesto
+                    </p>
+                </div>
+                <div class="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                    <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI 3: Avance Financiero (Cobrado) -->
+        <div class="bg-white dark:bg-base-900 rounded-xl border border-base-200 dark:border-base-800 p-6 shadow-sm">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-sm font-medium text-base-500 dark:text-base-400 mb-1">Avance Financiero</p>
+                    <h3 class="text-2xl font-bold text-base-900 dark:text-base-100">${{ kpi_financiero|floatformat:2 }}</h3>
+                    <p class="text-xs text-purple-600 dark:text-purple-400 mt-1 font-medium">
+                        {{ pct_financiero|floatformat:1 }}% del Presupuesto
+                    </p>
+                </div>
+                <div class="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfica Curva S -->
+    <div class="bg-white dark:bg-base-900 rounded-xl border border-base-200 dark:border-base-800 shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-base-200 dark:border-base-800 flex justify-between items-center">
+            <h3 class="font-semibold text-base-900 dark:text-base-100">Gráfica Acumulada (MXN)</h3>
+        </div>
+        <div class="p-6">
+            <div style="height: 500px; width: 100%;">
+                <canvas id="curvasChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cargar Chart.js (Unfold o CDN local si no existe) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const dataJSON = {{ chart_data|safe }};
+    const labels = dataJSON.labels;
+    const planeado = dataJSON.planeado;
+    const real_fisico = dataJSON.real_fisico;
+    const real_financiero = dataJSON.real_financiero;
+
+    const ctx = document.getElementById('curvasChart').getContext('2d');
+    
+    // Configuración para que respete el tema oscuro de Tailwind
+    const isDark = document.documentElement.classList.contains('dark');
+    const gridColor = isDark ? '#374151' : '#e5e7eb';
+    const textColor = isDark ? '#9ca3af' : '#6b7280';
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Planeado',
+                    data: planeado,
+                    borderColor: '#3b82f6', // blue-500
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 3,
+                    borderDash: [5, 5],
+                    tension: 0.4,
+                    fill: false,
+                    pointRadius: 0
+                },
+                {
+                    label: 'Real Físico',
+                    data: real_fisico,
+                    borderColor: '#22c55e', // green-500
+                    backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 2
+                },
+                {
+                    label: 'Financiero (Estimaciones)',
+                    data: real_financiero,
+                    borderColor: '#a855f7', // purple-500
+                    backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: false,
+                    pointRadius: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(context.parsed.y);
+                            }
+                            return label;
+                        }
+                    }
+                },
+                legend: {
+                    labels: {
+                        color: textColor,
+                        usePointStyle: true,
+                        boxWidth: 8
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: gridColor,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: textColor,
+                        maxTicksLimit: 15
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: gridColor,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: textColor,
+                        callback: function(value, index, values) {
+                            if (value >= 1000000) {
+                                return '$' + (value / 1000000).toFixed(1) + 'M';
+                            } else if (value >= 1000) {
+                                return '$' + (value / 1000).toFixed(0) + 'k';
+                            }
+                            return '$' + value;
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
