@@ -16,6 +16,7 @@ from django.template.loader import render_to_string
 from gestor.models import ElementoConstructivo
 from .resorce import ElementoResource
 from django.db.models import Avg, Sum
+from .generador_admin import ElementoConceptoRelacionInline
 
 @admin.register(ElementoConstructivo)
 class ElementoConstructivoAdmin(ModelAdmin, ImportExportModelAdmin):
@@ -33,6 +34,8 @@ class ElementoConstructivoAdmin(ModelAdmin, ImportExportModelAdmin):
         'responsable_display',
         'dias_programados',
     ]
+
+    inlines = [ElementoConceptoRelacionInline]
 
     list_filter = [
         ('tipo', ChoicesDropdownFilter),

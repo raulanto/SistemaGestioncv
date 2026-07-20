@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 import uuid
+import math
+from pyproj import Proj
 from .audited_model import AuditedModel
 from .project_model import Proyecto
 
@@ -109,3 +111,20 @@ class ElementoConstructivo(AuditedModel):
 
     def __str__(self):
         return f"{self.codigo} - {self.nombre}"
+
+    def save(self, *args, **kwargs):
+        if self.latitud is not None and self.longitud is not None:
+            # Calcular la zona UTM a partir de la longitud
+            self.utm_zona = int(math.floor((self.longitud + 180) / 6.0)) + 1
+            
+            # Crear la proyección para la zona correspondiente
+            # Si latitud es negativa (sur del ecuador), se usa south=True
+            south = self.latitud < 0
+            p = Proj(proj='utm', zone=self.utm_zona, ellps='WGS84', south=south)
+            
+            # Calcular las coordenadas UTM
+            este, norte = p(self.longitud, self.latitud)
+            self.utm_este = este
+            self.utm_norte = norte
+            
+        super().save(*args, **kwargs)

@@ -22,6 +22,11 @@ from .project_admin import ProyectoAdmin
 from .punto_admin import PuntoControlAdmin
 from .report_admin import ReporteAvanceAdmin
 from .volume_admin import VolumenTerraceriaAdmin
+from .material_admin import MaterialAdmin, InventarioProyectoAdmin
+from .presupuesto_admin import ConceptoPresupuestoAdmin
+from .generador_admin import ElementoConceptoRelacionAdmin, NumeroGeneradorAdmin
+from .estimacion_admin import EstimacionAdmin, EstimacionDetalleAdmin
+from .finanzas_admin import RetencionAdmin, ConvenioModificatorioAdmin, GastoRealAdmin
 
 admin.site.unregister(User)
 admin.site.unregister(Group)
@@ -110,5 +115,11 @@ class GroupAdmin(BaseGroupAdmin, ModelAdmin):
     pass
 
 
-__all__ = ['ProyectoAdmin', 'ElementoConstructivoAdmin', 'PuntoControlAdmin', 'CuadrillaAdmin', "ReporteAvanceAdmin",
-           "VolumenTerraceriaAdmin"]
+__all__ = [
+    'ProyectoAdmin', 'ElementoConstructivoAdmin', 'PuntoControlAdmin', 
+    'CuadrillaAdmin', 'ReporteAvanceAdmin', 'VolumenTerraceriaAdmin',
+    'MaterialAdmin', 'InventarioProyectoAdmin',
+    'ConceptoPresupuestoAdmin', 'ElementoConceptoRelacionAdmin', 'NumeroGeneradorAdmin',
+    'EstimacionAdmin', 'EstimacionDetalleAdmin',
+    'RetencionAdmin', 'ConvenioModificatorioAdmin', 'GastoRealAdmin'
+]

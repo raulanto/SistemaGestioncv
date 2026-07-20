@@ -45,7 +45,6 @@ class ReporteAvance(AuditedModel):
     descripcion = models.TextField()
 
     # Recursos utilizados
-    materiales_utilizados = models.TextField(blank=True)
     personal_asignado = models.IntegerField(default=0)
     horas_trabajadas = models.FloatField(default=0)
 

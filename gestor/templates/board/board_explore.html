@@ -426,7 +426,8 @@
                 document.getElementById('chartLoading').style.display = 'flex';
 
                 try {
-                    const response = await fetch(`/gestor/proyecto/proyecto-data/?proyecto_id=${proyectoId}`);
+                    const url = `{% url 'admin:proyecto_data_api' %}?proyecto_id=${proyectoId}`;
+                    const response = await fetch(url);
                     const data = await response.json();
 
                     currentProyecto = data.proyecto;

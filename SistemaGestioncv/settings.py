@@ -121,7 +121,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LOGIN_URL = "admin:login"
 
-LOGIN_REDIRECT_URL = reverse_lazy("admin:index")
+
 
 LANGUAGE_CODE = 'es-mx'
 TIME_ZONE = 'America/Mexico_City'
@@ -274,7 +274,62 @@ UNFOLD = {
                     },
                 ],
             },
-
+            {
+                "title": _("Materiales"),
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Materiales"),
+                        "icon": "inventory",
+                        "link": reverse_lazy("admin:gestor_material_changelist"),
+                    },
+                    {
+                        "title": _("Inventario"),
+                        "icon": "storage",
+                        "link": reverse_lazy("admin:gestor_inventarioproyecto_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": _("Presupuestos"),
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Conceptos"),
+                        "icon": "request_quote",
+                        "link": reverse_lazy("admin:gestor_conceptopresupuesto_changelist"),
+                    },
+                    {
+                        "title": _("Números Generadores"),
+                        "icon": "calculate",
+                        "link": reverse_lazy("admin:gestor_numerogenerador_changelist"),
+                    },
+                    {
+                        "title": _("Estimaciones"),
+                        "icon": "request_page",
+                        "link": reverse_lazy("admin:gestor_estimacion_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": _("Finanzas y Control"),
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Gastos Reales"),
+                        "icon": "payments",
+                        "link": reverse_lazy("admin:gestor_gastoreal_changelist"),
+                    },
+                    {
+                        "title": _("Convenios"),
+                        "icon": "handshake",
+                        "link": reverse_lazy("admin:gestor_conveniomodificatorio_changelist"),
+                    },
+                ],
+            },
             {
                 "title": _("Configuración"),
                 "separator": True,

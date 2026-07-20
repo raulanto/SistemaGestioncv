@@ -90,3 +90,12 @@ class Proyecto(AuditedModel):
 
     def __str__(self):
         return f"{self.codigo} - {self.nombre}"
+
+    def save(self, *args, **kwargs):
+        if self.lat_referencia is not None and self.lon_referencia is not None:
+            import math
+            # Calcular la zona UTM a partir de la longitud
+            self.zona_utm = int(math.floor((self.lon_referencia + 180) / 6.0)) + 1
+            # Determinar el hemisferio
+            self.hemisferio = 'S' if self.lat_referencia < 0 else 'N'
+        super().save(*args, **kwargs)

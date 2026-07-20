@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.template.loader import render_to_string
 from django.urls import path, reverse
+from django.shortcuts import redirect
 from django.utils import timezone
 from django.utils.html import format_html
 from import_export.admin import ImportExportModelAdmin
@@ -10,10 +11,10 @@ from unfold.contrib.filters.admin import (
     RangeNumericFilter,
     ChoicesDropdownFilter,
 )
-from unfold.decorators import display
+from unfold.decorators import display, action
 from django.db.models import Count
 from gestor.models import Proyecto
-from gestor.views import ProyectoDashboardView, ProyectoMapsView, ProyectoExplorerView, ProyectoDataAPIView
+from gestor.views import ProyectoDashboardView, ProyectoMapsView, ProyectoExplorerView, ProyectoDataAPIView, ProyectoCurvaSView
 from .resorce import ProyectoResource
 
 
@@ -29,7 +30,8 @@ class ProyectoAdmin(ModelAdmin, ImportExportModelAdmin):
         'avance_display',
         'presupuesto_display',
         'dias_restantes',
-        'display_elementos_count'
+        'display_elementos_count',
+        'acciones'
     ]
     list_filter_submit = True
 
@@ -258,11 +260,33 @@ class ProyectoAdmin(ModelAdmin, ImportExportModelAdmin):
                               d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
                     </svg>
                 </a>
+                <a href="{}" 
+                   class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg
+                          bg-purple-600 hover:bg-purple-700 text-white transition-colors duration-200" title="Curva S">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                    </svg>
+                </a>
             </div>
             ''',
             reverse('admin:proyecto_dashboard', args=[obj.pk]),
-            reverse('admin:proyecto_mapa', args=[obj.pk])
+            reverse('admin:proyecto_mapa', args=[obj.pk]),
+            reverse('admin:proyecto_curvas', args=[obj.pk])
         )
+
+    actions_detail = ["action_dashboard", "action_mapa", "action_curva_s"]
+
+    @action(description="📊 Dashboard", url_path="dashboard")
+    def action_dashboard(self, request, object_id):
+        return redirect(reverse('admin:proyecto_dashboard', args=[object_id]))
+
+    @action(description="🗺️ Mapa", url_path="mapa")
+    def action_mapa(self, request, object_id):
+        return redirect(reverse('admin:proyecto_mapa', args=[object_id]))
+
+    @action(description="📈 Curva S", url_path="curvas")
+    def action_curva_s(self, request, object_id):
+        return redirect(reverse('admin:proyecto_curvas', args=[object_id]))
 
     @display(description="Estadísticas del Proyecto")
     def estadisticas_card(self, obj):
@@ -469,9 +493,16 @@ class ProyectoAdmin(ModelAdmin, ImportExportModelAdmin):
                 name='proyecto_mapa',
             ),
             path(
+                '<path:object_id>/curva-s/',
+                self.admin_site.admin_view(
+                    ProyectoCurvaSView.as_view(model_admin=self)
+                ),
+                name='proyecto_curvas',
+            ),
+            path(
                 'explorer/',
                 self.admin_site.admin_view(
-                    ProyectoExplorerView.as_view(model_admin=self)
+                    ProyectoExplorerView.as_view(admin_site=self.admin_site)
                 ),
                 name='proyecto_explorer',
             ),
@@ -479,7 +510,7 @@ class ProyectoAdmin(ModelAdmin, ImportExportModelAdmin):
             path(
                 'proyecto-data/',
                 self.admin_site.admin_view(
-                    lambda request: ProyectoDataAPIView.as_view(model_admin=self)(request)
+                    lambda request: ProyectoDataAPIView.as_view()(request)
                 ),
                 name='proyecto_data_api',
             ),

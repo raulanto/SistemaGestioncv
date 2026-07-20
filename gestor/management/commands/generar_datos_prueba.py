@@ -157,6 +157,9 @@ class Command(BaseCommand):
         fecha_inicio = timezone.now().date() - timedelta(days=random.randint(30, 180))
         duracion_dias = random.randint(180, 540)
 
+        # Eliminar si ya existe para evitar IntegrityError si no se usó --limpiar
+        Proyecto.objects.filter(codigo=plantilla['codigo']).delete()
+
         proyecto = Proyecto.objects.create(
             nombre=plantilla['nombre'],
             codigo=plantilla['codigo'],
@@ -340,23 +343,12 @@ class Command(BaseCommand):
             elementos_cuadrilla = [e for e in elementos if e.estado in ['EXCAVACION', 'CIMBRADO', 'ARMADO']]
             elemento_actual = random.choice(elementos_cuadrilla) if elementos_cuadrilla else None
 
-            # Ubicación actual (cerca del elemento actual)
-            if elemento_actual:
-                lat_actual = elemento_actual.latitud + random.uniform(-0.001, 0.001)
-                lon_actual = elemento_actual.longitud + random.uniform(-0.001, 0.001)
-            else:
-                lat_actual = None
-                lon_actual = None
-
             cuadrilla = Cuadrilla.objects.create(
                 proyecto=proyecto,
                 nombre=nombre,
-                jefe_cuadrilla=jefes[i % len(jefes)],
-                latitud_actual=lat_actual,
-                longitud_actual=lon_actual,
-                ultima_actualizacion=timezone.now() - timedelta(minutes=random.randint(5, 120)),
+                lider=jefes[i % len(jefes)],
                 elemento_actual=elemento_actual,
-                activa=True
+                estado='ACTIVA'
             )
             cuadrillas.append(cuadrilla)
 
@@ -392,7 +384,6 @@ class Command(BaseCommand):
                     avance_cantidad=random.uniform(1, 50),
                     avance_porcentaje=min(100, avance_parcial * (i + 1)),
                     descripcion=self.generar_descripcion_reporte(elemento.tipo),
-                    materiales_utilizados=self.generar_materiales(elemento.tipo),
                     personal_asignado=random.randint(3, 12),
                     horas_trabajadas=random.uniform(4, 10),
                     validado=random.choice([True, True, False]),

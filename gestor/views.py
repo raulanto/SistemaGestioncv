@@ -9,8 +9,8 @@ from django.db.models import Avg, Count, Sum, Q
 from unfold.admin import ModelAdmin
 from unfold.views import UnfoldModelAdminViewMixin
 from django.db.models import Avg
-from django.views.generic import TemplateView
-from unfold.views import UnfoldModelAdminViewMixin
+from django.views.generic import TemplateView, View
+from unfold.views import UnfoldModelAdminViewMixin, UnfoldSiteViewMixin
 from django.contrib.admin import site as admin_site
 from django.core.exceptions import PermissionDenied
 from gestor.models import Proyecto
@@ -65,18 +65,25 @@ class ProyectoMapsView(UnfoldModelAdminViewMixin, TemplateView):
             self.kwargs.get('object_id')
         )
         if proyecto:
-            elementos = proyecto.elementos.all()
+            # Diccionario para mapear el estado a su nombre a mostrar (equivalente a get_estado_display())
+            estado_choices = dict(proyecto.elementos.model._meta.get_field('estado').choices)
+            
+            # Utilizamos .values() para no instanciar los objetos del modelo, reduciendo uso de RAM y tiempo
+            elementos = list(proyecto.elementos.values(
+                'id', 'codigo', 'nombre', 'latitud', 'longitud', 'estado', 'porcentaje_avance'
+            ))
+            
             elementos_json = []
             for elemento in elementos:
                 elementos_json.append({
-                    'id': str(elemento.id),
-                    'codigo': elemento.codigo,
-                    'nombre': elemento.nombre,
-                    'latitud': elemento.latitud,
-                    'longitud': elemento.longitud,
-                    'estado': elemento.estado,
-                    'estado_display': elemento.get_estado_display(),
-                    'porcentaje_avance': float(round(elemento.porcentaje_avance,2)),
+                    'id': str(elemento['id']),
+                    'codigo': elemento['codigo'],
+                    'nombre': elemento['nombre'],
+                    'latitud': float(elemento['latitud']) if elemento['latitud'] else 0.0,
+                    'longitud': float(elemento['longitud']) if elemento['longitud'] else 0.0,
+                    'estado': elemento['estado'],
+                    'estado_display': str(estado_choices.get(elemento['estado'], elemento['estado'])),
+                    'porcentaje_avance': float(round(elemento['porcentaje_avance'] or 0, 2)),
                 })
 
             context.update({
@@ -247,7 +254,7 @@ def dashboard_callback(request, context):
     return context
 
 
-class ProyectoExplorerView(UnfoldModelAdminViewMixin, TemplateView):
+class ProyectoExplorerView(UnfoldSiteViewMixin, TemplateView):
     title = "Explorador de Proyectos"
     permission_required = ()
     template_name = "board/board_explore.html"
@@ -302,9 +309,9 @@ class ProyectoExplorerView(UnfoldModelAdminViewMixin, TemplateView):
 
 
 # API endpoint para obtener datos del proyecto
-class ProyectoDataAPIView(UnfoldModelAdminViewMixin, TemplateView):
+class ProyectoDataAPIView(View):
     """API para obtener datos de un proyecto específico"""
-    permission_required = ()
+    
     def get(self, request, *args, **kwargs):
         proyecto_id = request.GET.get('proyecto_id')
 
@@ -393,3 +400,134 @@ def admin_password_change_guard(request):
 class HomeView(RedirectView):
     pattern_name = "admin:home"
 
+
+class LandingPageView(TemplateView):
+    """
+    Vista estática para la página de inicio (Landing Page)
+    """
+    template_name = 'landing.html'
+class ProyectoCurvaSView(UnfoldModelAdminViewMixin, TemplateView):
+    title = "Curva S del Proyecto"
+    permission_required = ()
+    template_name = "board/proyecto_curvas.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        proyecto = self.model_admin.get_object(
+            self.request,
+            self.kwargs.get('object_id')
+        )
+        if not proyecto:
+            return context
+
+        from datetime import timedelta
+        from django.db.models import Sum
+        from gestor.models import (
+            ElementoConceptoRelacion, NumeroGenerador, EstimacionDetalle, ConceptoPresupuesto
+        )
+
+        fecha_inicio = proyecto.fecha_inicio
+        fecha_fin = proyecto.fecha_fin_estimada
+        
+        # 1. Preparar línea de tiempo (días)
+        if not fecha_inicio or not fecha_fin:
+            return context
+            
+        delta_dias = (fecha_fin - fecha_inicio).days
+        if delta_dias < 0:
+            delta_dias = 0
+            
+        fechas = [fecha_inicio + timedelta(days=i) for i in range(delta_dias + 1)]
+        labels = [f.strftime('%Y-%m-%d') for f in fechas]
+        
+        # 2. Calcular KPIs básicos
+        # Presupuesto Total (Suma de los importes contratados)
+        kpi_presupuesto = ConceptoPresupuesto.objects.filter(proyecto=proyecto).aggregate(
+            t=Sum('importe_contratado')
+        )['t'] or 0
+        
+        # Físico Real (Suma de todos los generadores)
+        generadores = NumeroGenerador.objects.filter(concepto__proyecto=proyecto).select_related('concepto')
+        kpi_fisico = sum((g.cantidad_ejecutada * g.concepto.precio_unitario) for g in generadores)
+        
+        # Financiero (Suma de estimaciones autorizadas o pagadas)
+        estimaciones_validas = proyecto.estimaciones.filter(estado__in=['AUTORIZADA', 'PAGADA'])
+        kpi_financiero = EstimacionDetalle.objects.filter(estimacion__in=estimaciones_validas).aggregate(
+            t=Sum('importe_periodo')
+        )['t'] or 0
+
+        # 3. Generar las curvas (Data Series)
+        
+        # a) Curva Planeada
+        # Para cada elemento, distribuir el costo de sus conceptos en sus días programados
+        relaciones = ElementoConceptoRelacion.objects.filter(concepto__proyecto=proyecto).select_related('elemento', 'concepto')
+        
+        costos_planeados_diarios = {f: 0.0 for f in fechas}
+        for rel in relaciones:
+            elem = rel.elemento
+            if elem.fecha_inicio_programada and elem.fecha_fin_programada:
+                dias_elem = (elem.fecha_fin_programada - elem.fecha_inicio_programada).days + 1
+                if dias_elem > 0:
+                    costo_total = float(rel.cantidad_asignada * rel.concepto.precio_unitario)
+                    costo_diario = costo_total / dias_elem
+                    
+                    for i in range(dias_elem):
+                        d = elem.fecha_inicio_programada + timedelta(days=i)
+                        if d in costos_planeados_diarios:
+                            costos_planeados_diarios[d] += costo_diario
+
+        # Acumular la planeada
+        planeado_data = []
+        acum_p = 0
+        for f in fechas:
+            acum_p += costos_planeados_diarios[f]
+            planeado_data.append(acum_p)
+
+        # b) Curva Real Físico
+        # Agrupar generadores por fecha de medición
+        costos_reales_diarios = {f: 0.0 for f in fechas}
+        for g in generadores:
+            if g.fecha_medicion in costos_reales_diarios:
+                costos_reales_diarios[g.fecha_medicion] += float(g.cantidad_ejecutada * g.concepto.precio_unitario)
+            elif g.fecha_medicion < fecha_inicio:
+                costos_reales_diarios[fecha_inicio] += float(g.cantidad_ejecutada * g.concepto.precio_unitario)
+
+        real_fisico_data = []
+        acum_r = 0
+        for f in fechas:
+            acum_r += costos_reales_diarios[f]
+            # Solo llenamos hasta "hoy" o hasta la última fecha con generadores
+            real_fisico_data.append(acum_r)
+
+        # c) Curva Financiera
+        # Agrupar detalles de estimación por la fecha de fin de la estimación
+        costos_financieros_diarios = {f: 0.0 for f in fechas}
+        detalles_fin = EstimacionDetalle.objects.filter(estimacion__in=estimaciones_validas).select_related('estimacion')
+        for d in detalles_fin:
+            f_est = d.estimacion.periodo_fin
+            if f_est in costos_financieros_diarios:
+                costos_financieros_diarios[f_est] += float(d.importe_periodo)
+            elif f_est < fecha_inicio:
+                costos_financieros_diarios[fecha_inicio] += float(d.importe_periodo)
+
+        real_financiero_data = []
+        acum_f = 0
+        for f in fechas:
+            acum_f += costos_financieros_diarios[f]
+            real_financiero_data.append(acum_f)
+
+        context.update({
+            'proyecto': proyecto,
+            'kpi_presupuesto': float(kpi_presupuesto),
+            'kpi_fisico': float(kpi_fisico),
+            'kpi_financiero': float(kpi_financiero),
+            'pct_fisico': (float(kpi_fisico) / float(kpi_presupuesto) * 100) if kpi_presupuesto else 0,
+            'pct_financiero': (float(kpi_financiero) / float(kpi_presupuesto) * 100) if kpi_presupuesto else 0,
+            'chart_data': json.dumps({
+                'labels': labels,
+                'planeado': [round(v, 2) for v in planeado_data],
+                'real_fisico': [round(v, 2) for v in real_fisico_data],
+                'real_financiero': [round(v, 2) for v in real_financiero_data],
+            })
+        })
+        return context

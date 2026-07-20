@@ -17,6 +17,8 @@ from unfold.contrib.filters.admin import (
 from gestor.models import ReporteAvance
 from django.db.models import Avg
 from django.shortcuts import redirect
+from .material_admin import MaterialUtilizadoInline
+from .generador_admin import NumeroGeneradorInline
 
 
 @admin.register(ReporteAvance)
@@ -31,6 +33,8 @@ class ReporteAvanceAdmin(ModelAdmin):
         'validado_badge',
         'ver_foto',
     ]
+
+    inlines = [MaterialUtilizadoInline, NumeroGeneradorInline]
 
     list_filter = [
         'validado',
@@ -74,7 +78,6 @@ class ReporteAvanceAdmin(ModelAdmin):
         }),
         ('Recursos', {
             'fields': (
-                'materiales_utilizados',
                 ('personal_asignado', 'horas_trabajadas'),
             ),
             'classes': ['tab'],
