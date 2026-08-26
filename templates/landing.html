@@ -8,356 +8,865 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --paper:#FFFFFF;
-    --bg-soft:#F8FAFC;
-    --ink:#0F172A;
-    --ink-soft:#64748B;
-    --ink-faint:#94A3B8;
-    --line:#E2E8F0;
-    --accent:#2563EB;
-    --accent-dark:#1D4ED8;
-    --accent-soft:#EFF6FF;
-    --panel:#0B1220;
-    --panel-chip:#1A2333;
-    --panel-line:#26304533;
-    --r-lg:28px;
-    --r-md:16px;
-    --r-sm:12px;
-    --r-pill:999px;
+  :root {
+    --bg-main: #020617; /* slate-950 */
+    --panel-white: #ffffff;
+    --panel-light: #f8fafc; /* slate-50 */
+    --text-dark: #0f172a; /* slate-900 */
+    --text-light: #64748b; /* slate-500 */
+    --accent: #3b82f6; /* blue-500 */
+    --accent-blue: #3b82f6; /* blue-500 */
+    --radius: 20px;
+    --font-sans: 'Inter', sans-serif;
   }
-  *{box-sizing:border-box; margin:0; padding:0;}
-  html{scroll-behavior:smooth;}
-  body{
-    background:var(--paper); color:var(--ink);
-    font-family:'Inter', sans-serif;
-    -webkit-font-smoothing:antialiased;
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background-color: var(--bg-main);
+    font-family: var(--font-sans);
+    color: var(--text-dark);
+    -webkit-font-smoothing: antialiased;
+    padding: 8px;
   }
-  a{color:inherit; text-decoration:none;}
-  .wrap{max-width:1180px; margin:0 auto; padding:0 28px;}
-  .eyebrow{
-    font-size:.78rem; font-weight:700; letter-spacing:.04em;
-    text-transform:uppercase; color:var(--accent);
+  a { text-decoration: none; color: inherit; }
+  
+  .page-wrapper {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
-
-  /* ---------- nav ---------- */
-  nav{border-bottom:1px solid var(--line);}
-  nav .wrap{display:flex; justify-content:space-between; align-items:center; height:78px;}
-  .logo{display:flex; align-items:center; gap:11px;}
-  .logo-mark{
-    width:36px; height:36px; border-radius:11px; background:var(--accent);
-    display:flex; align-items:center; justify-content:center;
-    color:#fff; font-weight:800; font-size:.82rem;
-  }
-  .logo-text{font-weight:800; font-size:1.12rem; letter-spacing:-.01em;}
-
-  .btn{
-    border-radius:var(--r-sm); font-weight:600; font-size:.9rem;
-    padding:11px 22px; display:inline-flex; align-items:center; gap:8px;
-    transition:background .15s ease, transform .15s ease, box-shadow .15s ease;
-    border:none; cursor:pointer;
-  }
-  .btn-primary{background:var(--accent); color:#fff; box-shadow:0 1px 2px rgba(15,23,42,.06);}
-  .btn-primary:hover{background:var(--accent-dark);}
-  .btn-ghost{background:transparent; color:var(--ink); border:1px solid var(--line);}
-  .btn-ghost:hover{border-color:var(--ink-faint); background:var(--bg-soft);}
-  .btn svg{width:15px; height:15px;}
-
-  /* ---------- hero ---------- */
-  .hero{padding:64px 0 90px;}
-  .hero .wrap{display:grid; grid-template-columns:1fr 1fr; gap:52px; align-items:center;}
-  @media (max-width:980px){ .hero .wrap{grid-template-columns:1fr;} }
-
-  h1{
-    font-weight:800; letter-spacing:-.03em; line-height:1.08;
-    font-size:clamp(2.1rem, 4vw, 3.15rem); margin:16px 0 20px;
-  }
-  h1 .accent{color:var(--accent);}
-  .hero p.lead{color:var(--ink-soft); font-size:1.06rem; line-height:1.6; max-width:46ch; margin-bottom:30px;}
-  .hero-ctas{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
-
-  /* ---------- panel oscuro con carrusel (misma familia visual que el login) ---------- */
-  .panel{
-    background:var(--panel); border-radius:var(--r-lg);
-    padding:28px 28px 26px; color:#fff; position:relative;
-    min-height:420px; display:flex; flex-direction:column;
-  }
-  .panel-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:26px;}
-  .crumb{font-size:.82rem; color:var(--ink-faint);}
-  .crumb b{color:#E2E8F0; font-weight:600;}
-  .live{
-    display:inline-flex; align-items:center; gap:6px; font-size:.72rem; font-weight:600;
-    color:#93C5FD; background:var(--panel-chip); padding:6px 12px; border-radius:var(--r-pill);
-  }
-  .live .pulse{width:6px; height:6px; border-radius:50%; background:#3B82F6; animation:pulse 1.8s ease-in-out infinite;}
-  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.35;}}
-
-  .slide{flex:1; display:none; flex-direction:column;}
-  .slide.active{display:flex;}
-  .slide h3{font-size:1.55rem; font-weight:800; letter-spacing:-.01em; margin-bottom:10px;}
-  .slide p{color:#AEB9CC; font-size:.95rem; line-height:1.6; max-width:42ch;}
-  .pills{display:flex; gap:8px; flex-wrap:wrap; margin-top:20px;}
-  .pill{
-    background:var(--panel-chip); color:#DDE3EE; font-size:.78rem; font-weight:600;
-    padding:8px 14px; border-radius:var(--r-pill); border:1px solid var(--panel-line);
+  .bento-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 32px;
   }
 
-  .tiles{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:24px;}
-  .tile{background:var(--panel-chip); border-radius:var(--r-md); padding:14px 16px; border:1px solid var(--panel-line);}
-  .tile .k{font-size:.66rem; font-weight:700; letter-spacing:.05em; color:#7C8AA5; text-transform:uppercase;}
-  .tile .v{font-size:1.05rem; font-weight:700; margin-top:6px; font-variant-numeric:tabular-nums; color:#fff;}
-  .tile .v small{font-size:.66rem; color:#7C8AA5; font-weight:600;}
-
-  .bars{margin-top:22px; display:flex; flex-direction:column; gap:14px;}
-  .bar-row .bl{display:flex; justify-content:space-between; font-size:.82rem; margin-bottom:7px; color:#DDE3EE;}
-  .bar-row .bl b{font-weight:700; color:#fff;}
-  .bar-track{height:8px; border-radius:var(--r-pill); background:var(--panel-chip); overflow:hidden;}
-  .bar-fill{height:100%; border-radius:var(--r-pill); background:linear-gradient(90deg,#3B82F6,#60A5FA);}
-
-  .dots{display:flex; gap:6px; margin-top:auto; padding-top:22px;}
-  .dot{width:7px; height:7px; border-radius:var(--r-pill); background:#33405A; cursor:pointer; transition:width .2s ease, background .2s ease;}
-  .dot.active{width:22px; background:var(--accent);}
-
-  /* ---------- cadenamiento ---------- */
-  .stationing{padding:10px 0 90px; background:var(--bg-soft); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
-  .stationing .head{padding-top:64px; margin-bottom:44px;}
-  .stationing h2{font-weight:800; font-size:1.6rem; letter-spacing:-.02em; margin-top:10px;}
-  .stationing p.sub{color:var(--ink-soft); max-width:56ch; margin-top:10px; line-height:1.6;}
-
-  .track{position:relative; padding:20px 0 44px; overflow-x:auto;}
-  .track-line{position:absolute; left:0; right:0; top:38px; height:3px; background:var(--line); border-radius:var(--r-pill);}
-  .track-inner{display:flex; justify-content:space-between; min-width:640px; position:relative;}
-  .station{display:flex; flex-direction:column; align-items:center; gap:10px; position:relative; padding-top:8px;}
-  .station .node{width:16px; height:16px; border-radius:50%; background:#fff; border:3px solid var(--accent); z-index:2;}
-  .station.dim .node{border-color:var(--ink-faint);}
-  .station .code{font-size:.78rem; font-weight:700; color:var(--accent);}
-  .station.dim .code{color:var(--ink-faint);}
-  .station .km{font-size:.74rem; color:var(--ink-soft); font-weight:600;}
-
-  /* ---------- módulos ---------- */
-  .modules{padding:90px 0 100px;}
-  .modules-head{margin-bottom:40px;}
-  .modules-head h2{font-weight:800; font-size:1.6rem; letter-spacing:-.02em; margin-top:10px;}
-
-  .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:20px;}
-  @media (max-width:920px){ .grid{grid-template-columns:repeat(2,1fr);} }
-  @media (max-width:640px){ .grid{grid-template-columns:1fr;} }
-
-  .card{
-    border:1px solid var(--line); border-radius:var(--r-lg); padding:26px;
-    transition:box-shadow .18s ease, border-color .18s ease, transform .18s ease;
+  /* Navbars */
+  .bento-nav {
+    display: flex;
+    gap: 16px;
+    height: 64px;
   }
-  .card:hover{box-shadow:0 12px 28px -12px rgba(15,23,42,.12); border-color:#CBD5E1; transform:translateY(-2px);}
-  .card-icon{
-    width:46px; height:46px; border-radius:var(--r-sm); background:var(--accent);
-    display:flex; align-items:center; justify-content:center; margin-bottom:18px;
+  .nav-brand {
+    background: var(--panel-white);
+    border-radius: var(--radius);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    font-weight: 800;
+    font-size: 1.3rem;
+    letter-spacing: -0.03em;
   }
-  .card-icon svg{width:22px; height:22px; color:#fff;}
-  .card h3{font-size:1.05rem; font-weight:700; margin-bottom:8px;}
-  .card p{color:var(--ink-soft); font-size:.9rem; line-height:1.55; margin-bottom:16px;}
-  .card .tags{display:flex; gap:6px; flex-wrap:wrap;}
-  .tag{
-    background:var(--accent-soft); color:var(--accent-dark); font-size:.74rem; font-weight:600;
-    padding:5px 11px; border-radius:var(--r-pill);
+  .logo-mark {
+    width: 32px; height: 32px;
+    background: var(--text-dark);
+    color: var(--panel-white);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem;
+  }
+  .nav-links {
+    display: flex;
+    gap: 12px;
+  }
+  .mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-dark);
+    cursor: pointer;
+    padding: 8px;
+  }
+  .nav-item {
+    background: var(--panel-white);
+    border-radius: var(--radius);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-light);
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav-item:hover, .nav-item.active {
+    color: var(--text-dark);
+  }
+  .nav-item.accent {
+    background: var(--accent);
+    color: white;
+  }
+  .nav-item.accent:hover {
+    background: #2563eb;
   }
 
-  /* ---------- footer ---------- */
-  footer{border-top:1px solid var(--line);}
-  footer .wrap{padding:28px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;}
-  footer .fl{font-size:.82rem; color:var(--ink-soft);}
-  footer .fl b{color:var(--ink);}
+  /* Grids */
+  .grid-hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    min-height: 640px;
+  }
+  .col-left, .col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .panel {
+    border-radius: var(--radius);
+    background: var(--panel-white);
+    padding: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Hero Left Panels */
+  .panel-hero-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    background-image: radial-gradient(circle at top right, #f1f5f9 0%, transparent 40%);
+  }
+  .badge {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--accent);
+    padding: 8px 16px;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 32px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+  }
+  .panel-hero-text h1 {
+    font-size: clamp(2.5rem, 4vw, 4.2rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    margin-bottom: 24px;
+  }
+  .panel-hero-text p {
+    font-size: 1.1rem;
+    color: var(--text-light);
+    line-height: 1.6;
+    max-width: 480px;
+    margin-bottom: 32px;
+  }
+  
+  .panel-logos {
+    background-color: var(--panel-white);
+    padding: 24px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .panel-logos h4 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-dark);
+  }
+  .logos-wrap {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    flex-wrap: wrap;
+    opacity: 0.7;
+    font-weight: 700;
+    font-size: 1.2rem;
+    letter-spacing: -0.02em;
+    color: var(--text-light);
+  }
+  .logos-wrap span { display: flex; align-items: center; gap: 8px; }
 
-  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+  /* Hero Right Panel */
+  .panel-hero-visual {
+    background: linear-gradient(135deg, var(--accent) 0%, #1e40af 100%);
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+  }
+  
+  /* KPI Panel */
+  .panel-kpi {
+    background-color: var(--panel-white);
+    padding: 24px 40px;
+    display: flex;
+    align-items: center;
+  }
+  .kpi-grid {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 16px;
+  }
+  .kpi-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .kpi-val {
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text-dark);
+  }
+  .kpi-lbl {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .glass-widget {
+    color: white;
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .glass-widget .top {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+  }
+  .glass-widget .title { font-size: 0.85rem; font-weight: 600; color: #bfdbfe; }
+  .glass-widget .live {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 700; color: #1e40af; background: white; padding: 4px 12px; border-radius: 99px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .glass-widget .pulse { width: 6px; height: 6px; border-radius: 50%; background: #3b82f6; animation: pulse 1.8s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.35;} }
+  
+  .glass-widget h3 { font-size: 1.5rem; margin-bottom: 8px; font-weight: 800; letter-spacing: -0.02em; }
+  .glass-widget p { font-size: 0.95rem; color: #dbeafe; line-height: 1.5; margin-bottom: 24px; }
+  .utm-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .utm-box { background: rgba(255,255,255,0.12); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
+  .utm-box .k { font-size: 0.65rem; text-transform: uppercase; color: #bfdbfe; font-weight: 700; margin-bottom: 4px; }
+  .utm-box .v { font-size: 1.1rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+  /* Timeline Panel */
+  .panel-timeline {
+    padding: 64px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 64px;
+  }
+  .timeline-header {
+    max-width: 700px;
+  }
+  .timeline-header h2 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+    margin-top: 16px;
+  }
+  .timeline-header p {
+    font-size: 1.05rem;
+    color: var(--text-light);
+    line-height: 1.6;
+  }
+  .timeline-container {
+    position: relative;
+    width: 100%;
+    padding: 24px 0;
+  }
+  .timeline-track {
+    position: absolute;
+    top: 36px;
+    left: 20px;
+    right: 20px;
+    height: 2px;
+    background: #e2e8f0;
+    z-index: 1;
+  }
+  .timeline-nodes {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    z-index: 2;
+  }
+  .node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    background: var(--panel-white);
+    padding: 0 24px;
+  }
+  .node .circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--panel-white);
+    border: 3px solid #cbd5e1;
+    position: relative;
+  }
+  .node.active .circle {
+    border-color: var(--accent);
+    border-width: 3px;
+  }
+  .node .label {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--text-light);
+    text-transform: uppercase;
+  }
+  .node.active .label {
+    color: var(--accent);
+  }
+  .node .sub {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94a3b8;
+  }
+
+  /* Modules Section */
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .card-module {
+    min-height: 680px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 40px;
+    position: relative;
+    color: white;
+    text-decoration: none;
+    transition: transform 0.2s ease, filter 0.2s ease;
+  }
+  .card-module:hover {
+    transform: translateY(-4px);
+    filter: brightness(1.1);
+  }
+  .card-module h2 {
+    font-size: clamp(1.8rem, 2.2vw, 2.2rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    z-index: 2;
+    margin-bottom: 12px;
+  }
+  .card-module p {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.85);
+    z-index: 2;
+  }
+  .card-content {
+    align-self: flex-start;
+    margin-top: auto;
+  }
+
+  .icon-link {
+    width: 48px; height: 48px;
+    background: var(--panel-white);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-dark);
+    font-weight: 600;
+    font-size: 1.2rem;
+  }
+
+  /* Backgrounds for Modules */
+  .mod-proyectos { background-image: linear-gradient(to top, rgba(2, 6, 23, 0.9) 0%, transparent 70%), url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQzQOLXo06LVv9E2j-zPxUcDOhu3pVENYLlwuh_Kum-M1whf4541k_MPefx&s=10'); background-size: cover; background-position: center; }
+  .mod-cuadrillas { background-image: linear-gradient(to top, rgba(2, 6, 23, 0.9) 0%, transparent 70%), url('https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'); background-size: cover; background-position: center; }
+  .mod-puntos { background-image: linear-gradient(to top, rgba(2, 6, 23, 0.9) 0%, transparent 70%), url('https://images.unsplash.com/photo-1503387762-592deb58ef4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'); background-size: cover; background-position: center; }
+  .mod-reportes { background-image: linear-gradient(to top, rgba(2, 6, 23, 0.9) 0%, transparent 70%), url('https://www.itmplatform.com/images/blog/project-status-report.png'); background-size: cover; background-position: center; }
+  .mod-terraceria { background-image: linear-gradient(to top, rgba(2, 6, 23, 0.9) 0%, transparent 70%), url('https://images.unsplash.com/photo-1504307651254-35680f356dfd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'); background-size: cover; background-position: center; }
+  .mod-auditoria { background-image: linear-gradient(to top, rgba(2, 6, 23, 0.9) 0%, transparent 70%), url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'); background-size: cover; background-position: center; }
+
+  @media (max-width: 1024px) {
+    .grid-hero { grid-template-columns: 1fr; }
+    .grid-3 { grid-template-columns: 1fr; }
+    .card-module { min-height: 400px; }
+  }
+  /* Footer Section */
+  .bento-footer {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+  }
+  .panel-footer {
+    background: linear-gradient(135deg, var(--accent) 0%, #1e40af 100%);
+    position: relative;
+    padding: 64px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 500px;
+    overflow: hidden;
+    color: white;
+  }
+  .footer-watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    text-align: center;
+    font-size: clamp(8rem, 15vw, 16rem);
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.12);
+    line-height: 1;
+    pointer-events: none;
+    letter-spacing: -0.05em;
+    z-index: 1;
+  }
+  .footer-glass {
+    position: relative;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius);
+    padding: 48px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    margin-top: auto;
+  }
+  .footer-content {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 48px;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+  .footer-brand .brand-logo {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .footer-brand .badge-light {
+    font-size: 0.65rem;
+    background: white;
+    color: var(--accent);
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-weight: 800;
+  }
+  .footer-brand p {
+    font-size: 0.95rem;
+    color: #dbeafe;
+    max-width: 250px;
+    line-height: 1.6;
+  }
+  .footer-links {
+    display: flex;
+    gap: 80px;
+    flex-wrap: wrap;
+  }
+  .link-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .link-col h4 {
+    font-size: 0.95rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: white;
+  }
+  .link-col a {
+    font-size: 0.9rem;
+    color: #bfdbfe;
+    transition: color 0.2s;
+    font-weight: 500;
+  }
+  .link-col a:hover {
+    color: white;
+  }
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 32px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    font-size: 0.85rem;
+    color: #93c5fd;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .bottom-links {
+    display: flex;
+    gap: 32px;
+  }
+  .bottom-links a {
+    transition: color 0.2s;
+  }
+  .bottom-links a:hover {
+    color: white;
+  }
+  /* Mobile Responsiveness */
+  @media (max-width: 768px) {
+    /* Navbar: Premium Bento Stack */
+    .bento-nav {
+      flex-direction: column;
+      height: auto;
+      gap: 8px;
+    }
+    .nav-brand {
+      width: 100%;
+      height: 60px;
+      justify-content: space-between;
+      padding: 0 16px;
+      font-size: 1.1rem;
+    }
+    .mobile-menu-btn {
+      display: block;
+    }
+    .nav-links {
+      display: none;
+      flex-direction: column;
+      width: 100%;
+      gap: 8px;
+    }
+    .nav-links.show {
+      display: flex;
+    }
+    .nav-item {
+      width: 100%;
+      height: 52px;
+      padding: 0 16px;
+      justify-content: flex-start;
+      font-size: 0.9rem;
+      text-align: left;
+    }
+
+    /* Footer: Centered Mobile Layout */
+    .panel-footer {
+      padding: 40px 24px;
+      min-height: auto;
+    }
+    .footer-watermark {
+      font-size: clamp(3rem, 12vw, 5rem);
+    }
+    .footer-glass {
+      padding: 32px 24px;
+    }
+    .footer-content {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 40px;
+    }
+    .footer-brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .footer-brand p {
+      margin: 0 auto;
+    }
+    .footer-links {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 32px 48px;
+    }
+    .link-col {
+      align-items: center;
+    }
+    .footer-bottom {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+    }
+    .bottom-links {
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    /* Other Sections */
+    .timeline-container {
+      overflow-x: auto;
+      padding-bottom: 24px;
+    }
+    .timeline-nodes {
+      min-width: 600px; /* Force horizontal scroll on mobile */
+    }
+    
+    .kpi-grid {
+      flex-direction: column;
+      gap: 24px;
+    }
+    
+    .panel {
+      padding: 24px;
+    }
+    .panel-hero-visual {
+      padding: 32px 24px;
+    }
+    .panel-timeline {
+      padding: 32px 24px;
+    }
+  }
 </style>
 </head>
 <body>
 
-  <nav>
-    <div class="wrap">
-      <div class="logo">
-        <div class="logo-mark">SG</div>
-        <div class="logo-text">SGOC</div>
+<div class="page-wrapper">
+  
+  <!-- Section 1: Hero -->
+  <div class="bento-section">
+    <!-- Navbar -->
+    <nav class="bento-nav">
+      <div class="nav-brand">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div class="logo-mark">SG</div>
+          SGOC
+        </div>
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
       </div>
-      <a href="/admin/" class="btn btn-primary">
-        Entrar al panel
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      <div class="nav-links" id="mobileMenu">
+        <a href="#" class="nav-item active">INICIO</a>
+        <a href="#modulos" class="nav-item">MÓDULOS</a>
+        <a href="/admin/" class="nav-item accent">ACCEDER</a>
+      </div>
+    </nav>
+
+    <!-- Hero Grid -->
+    <div class="grid-hero">
+      <div class="col-left">
+        <div class="panel panel-hero-text">
+          <span class="badge">Gestión de Obra</span>
+          <h1>Construido para <br>Avanzar</h1>
+          <p>SGOC provee soluciones flexibles de control de obra diseñadas para proyectos modernos. Desde la libreta de campo hasta el expediente digital, conectamos cuadrillas, reportes y georreferencia para mantener cada fase avanzando eficientemente.</p>
+        </div>
+        <div class="panel panel-logos">
+          <h4>Respaldado en controles globales de calidad</h4>
+          <div class="logos-wrap">
+            <span>◆ WGS84</span>
+            <span>▲ UTM</span>
+            <span>● ISO-9001</span>
+            <span>■ BIM</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-right">
+        <div class="panel panel-hero-visual">
+           <div class="glass-widget">
+              <div class="top">
+                <span class="title" id="locName">Villahermosa, Tabasco</span>
+                <span class="live"><span class="pulse"></span>En vivo</span>
+              </div>
+              <h3>Puntos de Control</h3>
+              <p>Cadenamientos georreferenciados con conversión automática a UTM — sin depender de servicios externos.</p>
+              <div class="utm-grid">
+                <div class="utm-box"><div class="k">Este (X)</div><div class="v" id="vEste">—</div></div>
+                <div class="utm-box"><div class="k">Norte (Y)</div><div class="v" id="vNorte">—</div></div>
+                <div class="utm-box"><div class="k">Zona</div><div class="v" id="vZona">—</div></div>
+              </div>
+           </div>
+        </div>
+        
+        <div class="panel panel-kpi">
+           <div class="kpi-grid">
+              <div class="kpi-item">
+                 <span class="kpi-val">12,450</span>
+                 <span class="kpi-lbl">m³ Terracería</span>
+              </div>
+              <div class="kpi-item">
+                 <span class="kpi-val">98%</span>
+                 <span class="kpi-lbl">Precisión GPS</span>
+              </div>
+              <div class="kpi-item">
+                 <span class="kpi-val">14</span>
+                 <span class="kpi-lbl">Frentes Activos</span>
+              </div>
+           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Puntos de Control Timeline -->
+  <div class="bento-section">
+    <div class="panel panel-timeline">
+      <div class="timeline-header">
+        <div class="badge">Puntos de control</div>
+        <h2>Cada frente de obra, con su propio cadenamiento.</h2>
+        <p>Los puntos de control se ubican sobre el trazo real de la obra y quedan georreferenciados, así el avance físico y el avance reportado son siempre el mismo dato.</p>
+      </div>
+      
+      <div class="timeline-container">
+        <div class="timeline-track"></div>
+        <div class="timeline-nodes">
+          <div class="node active">
+            <div class="circle"></div>
+            <div class="label">PC-01</div>
+            <div class="sub">0+000</div>
+          </div>
+          <div class="node">
+            <div class="circle"></div>
+            <div class="label">PC-02</div>
+            <div class="sub">0+350</div>
+          </div>
+          <div class="node active">
+            <div class="circle"></div>
+            <div class="label">PC-03</div>
+            <div class="sub">0+780</div>
+          </div>
+          <div class="node">
+            <div class="circle"></div>
+            <div class="label">PC-04</div>
+            <div class="sub">1+120</div>
+          </div>
+          <div class="node active">
+            <div class="circle"></div>
+            <div class="label">PC-05</div>
+            <div class="sub">1+460</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: Modules -->
+  <div class="bento-section" id="modulos">
+    <!-- Sub Nav -->
+    <nav class="bento-nav">
+      <div class="nav-brand">Módulos del Sistema</div>
+    </nav>
+
+    <div class="grid-3">
+      <!-- Proyectos -->
+      <a href="/admin/" class="panel card-module mod-proyectos">
+        <div class="icon-link">↗</div>
+        <div class="card-content">
+          <h2>Proyectos</h2>
+          <p>Registro maestro de la obra: presupuesto, fechas contractuales, cliente y ubicación de referencia.</p>
+        </div>
+      </a>
+
+      <!-- Cuadrillas -->
+      <a href="/admin/" class="panel card-module mod-cuadrillas">
+        <div class="icon-link">↗</div>
+        <div class="card-content">
+          <h2>Cuadrillas</h2>
+          <p>Asignación de personal por especialidad y frente de trabajo, con historial de participación.</p>
+        </div>
+      </a>
+
+      <!-- Puntos de Control -->
+      <a href="/admin/" class="panel card-module mod-puntos">
+        <div class="icon-link">↗</div>
+        <div class="card-content">
+          <h2>Puntos de Control</h2>
+          <p>Cadenamientos georreferenciados con conversión automática WGS84 → UTM.</p>
+        </div>
+      </a>
+
+      <!-- Reportes de avance -->
+      <a href="/admin/" class="panel card-module mod-reportes">
+        <div class="icon-link">↗</div>
+        <div class="card-content">
+          <h2>Reportes de Avance</h2>
+          <p>Bitácora estructurada de progreso físico por elemento, con soporte fotográfico.</p>
+        </div>
+      </a>
+
+      <!-- Volúmenes de terracería -->
+      <a href="/admin/" class="panel card-module mod-terraceria">
+        <div class="icon-link">↗</div>
+        <div class="card-content">
+          <h2>Volúmenes de Terracería</h2>
+          <p>Control de cortes y terraplenes con validación de metrados frente a lo proyectado.</p>
+        </div>
+      </a>
+
+      <!-- Trazabilidad y auditoría -->
+      <a href="/admin/" class="panel card-module mod-auditoria">
+        <div class="icon-link">↗</div>
+        <div class="card-content">
+          <h2>Trazabilidad y Auditoría</h2>
+          <p>Historial inalterable de cambios por registro: quién, qué y cuándo.</p>
+        </div>
       </a>
     </div>
-  </nav>
+  </div>
 
-  <main>
-    <section class="hero">
-      <div class="wrap">
-        <div>
-          <p class="eyebrow">Sistema de gestión de obras civiles</p>
-          <h1>Lo que pasa en la obra, <span class="accent">registrado</span> como pasa.</h1>
-          <p class="lead">
-            SGOC conecta la libreta de campo con el expediente digital: proyectos, cuadrillas, puntos de control georreferenciados y reportes de avance, todo en un solo lugar.
-          </p>
-          <div class="hero-ctas">
-            <a href="/admin/" class="btn btn-primary">
-              Entrar al panel
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            </a>
-            <a href="#modulos" class="btn btn-ghost">Ver módulos</a>
+</div>
+
+  <!-- Footer Section -->
+  <div class="bento-section bento-footer">
+    <footer class="panel panel-footer">
+      <div class="footer-watermark">SGOC</div>
+      
+      <div class="footer-glass">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <div class="brand-logo">SGOC <span class="badge-light">v2.0</span></div>
+            <p>Gestión integral y control paramétrico para proyectos de obra civil.</p>
+          </div>
+          
+          <div class="footer-links">
+            <div class="link-col">
+              <h4>Producto</h4>
+              <a href="#">Módulos</a>
+              <a href="#">Reportes</a>
+              <a href="#">Topografía</a>
+              <a href="#">Integraciones</a>
+            </div>
+            <div class="link-col">
+              <h4>Recursos</h4>
+              <a href="#">Documentación</a>
+              <a href="#">Guías de Campo</a>
+              <a href="#">Casos de Uso</a>
+              <a href="#">Soporte</a>
+            </div>
+            <div class="link-col">
+              <h4>Compañía</h4>
+              <a href="#">Acerca de</a>
+              <a href="#">Contacto</a>
+              <a href="#">Partners</a>
+            </div>
           </div>
         </div>
-
-        <div class="panel">
-          <div class="panel-top">
-            <div class="crumb"><b>Gestor</b> &nbsp;›&nbsp; <span id="crumbSlide">Puntos de Control</span></div>
-            <div class="live"><span class="pulse"></span>Vista previa</div>
-          </div>
-
-          <!-- Slide 1: Puntos de control / UTM en vivo -->
-          <div class="slide active" data-slide="0">
-            <h3>Puntos de Control</h3>
-            <p>Cadenamientos georreferenciados con conversión automática a UTM — sin depender de servicios externos.</p>
-            <div class="tiles">
-              <div class="tile"><div class="k">Este (X)</div><div class="v" id="vEste">—</div></div>
-              <div class="tile"><div class="k">Norte (Y)</div><div class="v" id="vNorte">—</div></div>
-              <div class="tile"><div class="k">Zona</div><div class="v" id="vZona">—</div></div>
-            </div>
-            <div class="pills">
-              <span class="pill" id="locName">Villahermosa, Tabasco</span>
-              <span class="pill">WGS84 → UTM</span>
-            </div>
-          </div>
-
-          <!-- Slide 2: Reportes de avance -->
-          <div class="slide" data-slide="1">
-            <h3>Reportes de Avance</h3>
-            <p>Documenta el progreso con porcentajes, evidencia fotográfica y cuadrillas asignadas.</p>
-            <div class="bars">
-              <div class="bar-row">
-                <div class="bl"><span>Zapata Z-04</span><b>68%</b></div>
-                <div class="bar-track"><div class="bar-fill" style="width:68%"></div></div>
-              </div>
-              <div class="bar-row">
-                <div class="bl"><span>Losa L-02</span><b>42%</b></div>
-                <div class="bar-track"><div class="bar-fill" style="width:42%"></div></div>
-              </div>
-              <div class="bar-row">
-                <div class="bl"><span>Muro M-11</span><b>91%</b></div>
-                <div class="bar-track"><div class="bar-fill" style="width:91%"></div></div>
-              </div>
-            </div>
-            <div class="pills">
-              <span class="pill">Evidencia fotográfica</span>
-              <span class="pill">Cuadrillas</span>
-              <span class="pill">% de avance</span>
-            </div>
-          </div>
-
-          <!-- Slide 3: Terracería -->
-          <div class="slide" data-slide="2">
-            <h3>Volúmenes de Terracería</h3>
-            <p>Control de cortes y terraplenes con validación de metrados frente a lo proyectado.</p>
-            <div class="tiles" style="grid-template-columns:repeat(2,1fr);">
-              <div class="tile"><div class="k">Corte</div><div class="v">4,280 <small>m³</small></div></div>
-              <div class="tile"><div class="k">Terraplén</div><div class="v">3,150 <small>m³</small></div></div>
-            </div>
-            <div class="pills">
-              <span class="pill">Corte</span>
-              <span class="pill">Terraplén</span>
-              <span class="pill">Validación de metrados</span>
-            </div>
-          </div>
-
-          <div class="dots" id="dots">
-            <div class="dot active" data-i="0"></div>
-            <div class="dot" data-i="1"></div>
-            <div class="dot" data-i="2"></div>
+        
+        <div class="footer-bottom">
+          <p>&copy; 2026 SGOC. Construido para quienes hacen que las cosas avancen.</p>
+          <div class="bottom-links">
+            <a href="#">Política de Privacidad</a>
+            <a href="#">Términos de Servicio</a>
           </div>
         </div>
       </div>
-    </section>
+    </footer>
+  </div>
 
-    <section class="stationing">
-      <div class="wrap">
-        <div class="head">
-          <p class="eyebrow">Puntos de control</p>
-          <h2>Cada frente de obra, con su propio cadenamiento.</h2>
-          <p class="sub">Los puntos de control se ubican sobre el trazo real de la obra y quedan georreferenciados, así el avance físico y el avance reportado son siempre el mismo dato.</p>
-        </div>
-        <div class="track">
-          <div class="track-line"></div>
-          <div class="track-inner">
-            <div class="station"><div class="node"></div><div class="code">PC-01</div><div class="km">0+000</div></div>
-            <div class="station dim"><div class="node"></div><div class="code">PC-02</div><div class="km">0+350</div></div>
-            <div class="station"><div class="node"></div><div class="code">PC-03</div><div class="km">0+780</div></div>
-            <div class="station dim"><div class="node"></div><div class="code">PC-04</div><div class="km">1+120</div></div>
-            <div class="station"><div class="node"></div><div class="code">PC-05</div><div class="km">1+460</div></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="modules" id="modulos">
-      <div class="wrap">
-        <div class="modules-head">
-          <p class="eyebrow">Índice</p>
-          <h2>Módulos del sistema</h2>
-        </div>
-
-        <div class="grid">
-
-          <div class="card">
-            <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12"/></svg></div>
-            <h3>Proyectos</h3>
-            <p>Registro maestro de la obra: presupuesto, fechas contractuales, cliente y ubicación de referencia.</p>
-            <div class="tags"><span class="tag">Presupuesto</span><span class="tag">Fechas</span></div>
-          </div>
-
-          <div class="card">
-            <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M2 21v-1.5C2 16.9 4.7 15 8 15s6 1.9 6 4.5V21M14.5 15.3c2.4.4 4.5 2 4.5 4.2V21"/></svg></div>
-            <h3>Cuadrillas</h3>
-            <p>Asignación de personal por especialidad y frente de trabajo, con historial de participación.</p>
-            <div class="tags"><span class="tag">Personal</span><span class="tag">Especialidad</span></div>
-          </div>
-
-          <div class="card">
-            <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2.6"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3"/></svg></div>
-            <h3>Puntos de control</h3>
-            <p>Cadenamientos georreferenciados con conversión automática WGS84 → UTM.</p>
-            <div class="tags"><span class="tag">Georreferencia</span><span class="tag">UTM</span></div>
-          </div>
-
-          <div class="card">
-            <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 3v2h6V3M8 11.5l2.3 2.3L16 8.3M8 17h5"/></svg></div>
-            <h3>Reportes de avance</h3>
-            <p>Bitácora estructurada de progreso físico por elemento, con soporte fotográfico.</p>
-            <div class="tags"><span class="tag">Evidencia fotográfica</span><span class="tag">% avance</span></div>
-          </div>
-
-          <div class="card">
-            <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 20 9 8l4 6 3-4 5 10z"/><path d="M3 20h18"/></svg></div>
-            <h3>Volúmenes de terracería</h3>
-            <p>Control de cortes y terraplenes con validación de metrados frente a lo proyectado.</p>
-            <div class="tags"><span class="tag">Corte</span><span class="tag">Terraplén</span></div>
-          </div>
-
-          <div class="card">
-            <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="9" r="6"/><path d="M8.5 14 7 21l5-2.4L17 21l-1.5-7"/><path d="m9.5 9 1.8 1.8L15 7.2"/></svg></div>
-            <h3>Trazabilidad y auditoría</h3>
-            <p>Historial inalterable de cambios por registro: quién, qué y cuándo.</p>
-            <div class="tags"><span class="tag">Historial</span><span class="tag">Auditoría</span></div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="wrap">
-      <div class="fl"><b>SGOC</b> · Sistema de Gestión de Obras Civiles</div>
-      <div class="fl">© 2026</div>
-    </div>
-  </footer>
+</div>
 
 <script>
-// ---------- Conversión WGS84 -> UTM (fórmula estándar de Snyder, misma lógica que el backend con pyproj) ----------
+// ---------- Mobile Menu Toggle ----------
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const mobileMenu = document.getElementById('mobileMenu');
+if(mobileMenuBtn && mobileMenu) {
+  mobileMenuBtn.addEventListener('click', () => {
+    mobileMenu.classList.toggle('show');
+  });
+}
+
+// ---------- Conversión WGS84 -> UTM (Widget dinámico conservado) ----------
 function toUTM(lat, lon){
   const a = 6378137.0, e2 = 0.00669438, k0 = 0.9996;
   const latRad = lat * Math.PI/180, lonRad = lon * Math.PI/180;
@@ -379,42 +888,22 @@ function toUTM(lat, lon){
 }
 
 const puntos = [
-  { name:'Villahermosa, Tabasco', lat:17.9895, lon:-92.9475 },
-  { name:'Cárdenas, Tabasco',     lat:18.0000, lon:-93.3767 },
-  { name:'Comalcalco, Tabasco',   lat:18.2622, lon:-93.2242 },
+  { name:'Frente Villahermosa', lat:17.9895, lon:-92.9475 },
+  { name:'Frente Cárdenas',     lat:18.0000, lon:-93.3767 },
+  { name:'Frente Comalcalco',   lat:18.2622, lon:-93.2242 },
 ];
 let utmIdx = 0;
 function renderUTM(){
   const p = puntos[utmIdx];
   const r = toUTM(p.lat, p.lon);
   document.getElementById('locName').textContent = p.name;
-  document.getElementById('vEste').innerHTML = Math.round(r.easting).toLocaleString('es-MX') + ' <small>m</small>';
-  document.getElementById('vNorte').innerHTML = Math.round(r.northing).toLocaleString('es-MX') + ' <small>m</small>';
+  document.getElementById('vEste').innerHTML = Math.round(r.easting).toLocaleString('es-MX');
+  document.getElementById('vNorte').innerHTML = Math.round(r.northing).toLocaleString('es-MX');
   document.getElementById('vZona').textContent = r.zone + r.hemisphere;
   utmIdx = (utmIdx + 1) % puntos.length;
 }
 renderUTM();
 setInterval(renderUTM, 3600);
-
-// ---------- Carrusel del panel (mismo patrón que el login) ----------
-const slideNames = ['Puntos de Control', 'Reportes de Avance', 'Volúmenes de Terracería'];
-const slides = document.querySelectorAll('.slide');
-const dots = document.querySelectorAll('.dot');
-const crumb = document.getElementById('crumbSlide');
-let current = 0;
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-function goTo(i){
-  current = i;
-  slides.forEach(s => s.classList.toggle('active', +s.dataset.slide === i));
-  dots.forEach(d => d.classList.toggle('active', +d.dataset.i === i));
-  crumb.textContent = slideNames[i];
-}
-dots.forEach(d => d.addEventListener('click', () => goTo(+d.dataset.i)));
-
-if (!reduceMotion){
-  setInterval(() => goTo((current + 1) % slides.length), 5000);
-}
 </script>
 
 </body>

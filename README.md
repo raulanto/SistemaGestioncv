@@ -52,6 +52,11 @@ Debes activar el entorno virtual antes de proceder con la instalación de paquet
 venv\\Scripts\\activate.bat
 ```
 
+**En macOS y Linux:**
+
+```bash
+source venv/bin/activate
+```
 
 Una vez activado, verás que el nombre de tu terminal cambia y muestra `(venv)` al inicio de la línea de comandos.
 
