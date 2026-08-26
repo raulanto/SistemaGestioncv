@@ -7,290 +7,188 @@
 {% block extrahead %}
     {{ block.super }}
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        .stat-value { font-variant-numeric: tabular-nums; }
+    </style>
 {% endblock %}
 
 {% block content %}
 
-    <div class="relative text-white rounded-2xl shadow-lg p-8 bg-cover bg-center w-full h-72 md:h-96 overflow-hidden z-0"
-         style="background-image: url('{% static "src/img/fondo_login.jpeg" %}');">
-        <div class="absolute inset-0 bg-gradient-to-l from-black/10 via-black/20 to-black/90 rounded-2xl"></div>
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 relative z-20">
+    {# ============ HEADER ============ #}
+    <div class="relative rounded-2xl overflow-hidden bg-slate-950 mb-8">
+        <div class="absolute inset-0">
+            <img src="{% static 'src/img/fondo_login.jpeg' %}" class="w-full h-full object-cover opacity-30" alt="">
+            <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/90 to-slate-950/60"></div>
+        </div>
 
-            {# Información del proyecto #}
-            <div class="flex-1">
-                <h1 class="text-white font-extrabold  text-4xl">
+        <div class="relative z-10 px-8 py-8 md:py-12 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
+
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-sm font-medium text-blue-400 tracking-wide">{{ proyecto.codigo }}</span>
+                    {% render_estado_badge proyecto.estado proyecto.get_estado_display %}
+                </div>
+                <h1 class="text-2xl md:text-3xl font-bold text-white tracking-tight truncate">
                     {{ proyecto.nombre }}
                 </h1>
-                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1.5 sm:mt-2 text-xs sm:text-sm text-white/90">
-                    <span class="text-3xl font-bold">{{ proyecto.codigo }}</span>
-
-
-                    <div class="hidden sm:flex items-center gap-2">
-                        <span>•</span>
-                        <span>{{ proyecto.cliente }}</span>
-                        <span>•</span>
-                        {% render_estado_badge proyecto.estado proyecto.get_estado_display %}
-                    </div>
-
-                    {# Badges aparte en móvil #}
-                    <div class="sm:hidden w-full mt-1">
-                        {% render_estado_badge proyecto.estado proyecto.get_estado_display %}
-                    </div>
-                </div>
+                <p class="text-sm text-white/60 mt-1">
+                    {{ proyecto.cliente }}
+                </p>
             </div>
 
-            {# Botones compactos #}
-            <div class="flex gap-2 w-full lg:w-auto">
-                {# Botón Mapa - compacto en móvil #}
+            <div class="flex gap-2 shrink-0">
                 <a href="{% url 'admin:proyecto_mapa' proyecto.id %}"
-                   class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 sm:gap-2
-                  px-3 py-2 border border-white/20 hover:border-white/40
-                  rounded-lg text-sm font-medium text-white
-                  bg-white/10 hover:bg-white/20 backdrop-blur-sm
-                  transition-all">
+                   class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+                          text-white/90 bg-white/10 hover:bg-white/15 border border-white/10 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
                     </svg>
-                    <span>Mapa</span>
+                    Mapa
                 </a>
-
-                {# Botón Editar - compacto en móvil #}
                 <a href="{% url 'admin:gestor_proyecto_change' proyecto.id %}"
-                   class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 sm:gap-2
-                  px-3 py-2 bg-white hover:bg-white/90
-                  text-primary-600 rounded-lg text-sm font-medium
-                  transition-all">
+                   class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium
+                          bg-blue-600 hover:bg-blue-500 text-white transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                     </svg>
-                    <span class="hidden xs:inline">Editar</span>
-                    <span class="xs:hidden">Editar</span>
+                    Editar
                 </a>
             </div>
         </div>
     </div>
-    <div class="flex flex-col gap-6 p-6">
-        {#        <div class="border border-base-300 border-dashed  p-3 rounded dark:border-base-700">#}
-        {##}
-        {# Header con breadcrumbs estilo Unfold #}
-        {#            <div class="flex items-center justify-between mb-6">#}
-        {#                <div>#}
-        {#                    <h1 class="text-3xl font-bold text-base-900 dark:text-white">#}
-        {#                        📊 {{ proyecto.nombre }}#}
-        {#                    </h1>#}
-        {#                    <div class="flex items-center gap-2 mt-2 text-sm text-base-600 dark:text-base-400">#}
-        {#                        <span class="font-medium">{{ proyecto.codigo }}</span>#}
-        {#                        <span>•</span>#}
-        {#                        <span>{{ proyecto.cliente }}</span>#}
-        {#                        <span>•</span>#}
-        {#                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium#}
-        {#                        {% if proyecto.estado == 'EJECUCION' %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200#}
-        {#                        {% elif proyecto.estado == 'PAUSADO' %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200#}
-        {#                        {% elif proyecto.estado == 'FINALIZADO' %}bg-base-100 text-base-800 dark:bg-base-700 dark:text-base-200#}
-        {#                        {% else %}bg-primary-100 text-primary-800 dark:bg-primary-900 dark:text-primary-200#}
-        {#                        {% endif %}">#}
-        {#                        {{ proyecto.get_estado_display }}#}
-        {#                    </span>#}
-        {#                    </div>#}
-        {#                </div>#}
-        {##}
-        {#                <div class="flex gap-3">#}
-        {#                    <a href="{% url 'admin:proyecto_mapa' proyecto.id %}"#}
-        {#                       class="inline-flex items-center px-4 py-2 border border-base-300 dark:border-base-600#}
-        {#                          rounded-lg text-sm font-medium text-base-700 dark:text-base-200#}
-        {#                          bg-white dark:bg-base-900 hover:bg-base-50 dark:hover:bg-base-700">#}
-        {#                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">#}
-        {#                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"#}
-        {#                                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>#}
-        {#                        </svg>#}
-        {#                        Mapa#}
-        {#                    </a> <a href="{% url 'admin:gestor_proyecto_change' proyecto.id %}"#}
-        {#                            class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700#}
-        {#                          text-white rounded-lg text-sm font-medium">#}
-        {#                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">#}
-        {#                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"#}
-        {#                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>#}
-        {#                    </svg>#}
-        {#                    Editar Proyecto#}
-        {#                </a>#}
-        {#                </div>#}
-        {#            </div>#}
-        {#        </div>#}
 
-        {# Tarjetas de Estadísticas - Estilo Unfold #}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:-mt-32 z-40">
+    <div class="flex flex-col gap-8">
 
-            {# Card 1: Total Elementos #}
-            <div class="bg-white dark:bg-base-900 rounded-lg shadow-sm border border-base-200 dark:border-base-700 p-6 hover:shadow-md transition-shadow">
-                <div class="flex items-center justify-between mb-2">
-                    <div class="text-sm font-medium text-base-600 dark:text-base-400 uppercase tracking-wider">
-                        Total Elementos
-                    </div>
-                    <div class="p-2 bg-primary-100 dark:bg-primary-900/30 rounded-lg">
-                        <svg class="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor"
-                             viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                        </svg>
-                    </div>
+        {# ============ ESTADÍSTICAS ============ #}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+            <div class="bg-white dark:bg-base-900 rounded-xl border border-base-100 dark:border-base-800 p-5">
+                <div class="text-xs font-medium text-base-500 dark:text-base-400 uppercase tracking-wide mb-2">
+                    Total Elementos
                 </div>
-                <div class="text-4xl font-bold text-base-900 dark:text-white">
+                <div class="text-3xl font-bold text-base-900 dark:text-white stat-value">
                     {{ total_elementos }}
                 </div>
             </div>
 
-            {# Card 2: Terminados #}
-            <div class="bg-white dark:bg-base-900 rounded-lg shadow-sm border border-base-200 dark:border-base-700 p-6 hover:shadow-md transition-shadow">
-                <div class="flex items-center justify-between mb-2">
-                    <div class="text-sm font-medium text-base-600 dark:text-base-400 uppercase tracking-wider">
-                        Terminados
-                    </div>
-                    <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                        <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor"
-                             viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
+            <div class="bg-white dark:bg-base-900 rounded-xl border border-base-100 dark:border-base-800 p-5">
+                <div class="text-xs font-medium text-base-500 dark:text-base-400 uppercase tracking-wide mb-2">
+                    Terminados
                 </div>
-                <div class="text-4xl font-bold text-base-900 dark:text-white">
+                <div class="text-3xl font-bold text-base-900 dark:text-white stat-value mb-1">
                     {{ terminados }}
                 </div>
-                <div class="mt-2 text-sm text-base-500 dark:text-base-400">
+                <div class="text-xs text-emerald-600 dark:text-emerald-400">
                     {% widthratio terminados total_elementos 100 %}% del total
                 </div>
             </div>
 
-            {# Card 3: En Proceso #}
-            <div class="bg-white dark:bg-base-900 rounded-lg shadow-sm border border-base-200 dark:border-base-700 p-6 hover:shadow-md transition-shadow">
-                <div class="flex items-center justify-between mb-2">
-                    <div class="text-sm font-medium text-base-600 dark:text-base-400 uppercase tracking-wider">
-                        En Proceso
-                    </div>
-                    <div class="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-                        <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor"
-                             viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
+            <div class="bg-white dark:bg-base-900 rounded-xl border border-base-100 dark:border-base-800 p-5">
+                <div class="text-xs font-medium text-base-500 dark:text-base-400 uppercase tracking-wide mb-2">
+                    En Proceso
                 </div>
-                <div class="text-4xl font-bold text-base-900 dark:text-white">
+                <div class="text-3xl font-bold text-base-900 dark:text-white stat-value mb-1">
                     {{ en_proceso }}
                 </div>
-                <div class="mt-2 text-sm text-base-500 dark:text-base-400">
+                <div class="text-xs text-base-400 dark:text-base-500">
                     Activos ahora
                 </div>
             </div>
 
-            {# Card 4: Avance Promedio #}
-            <div class="bg-white dark:bg-base-900 rounded-lg shadow-sm border border-base-200 dark:border-base-700 p-6 hover:shadow-md transition-shadow">
-                <div class="flex items-center justify-between mb-2">
-                    <div class="text-sm font-medium text-base-600 dark:text-base-400 uppercase tracking-wider">
-                        Avance Promedio
-                    </div>
-                    <div class="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                        <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor"
-                             viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-                        </svg>
-                    </div>
+            <div class="bg-white dark:bg-base-900 rounded-xl border border-base-100 dark:border-base-800 p-5">
+                <div class="text-xs font-medium text-base-500 dark:text-base-400 uppercase tracking-wide mb-2">
+                    Avance Promedio
                 </div>
-                <div class="text-4xl font-bold text-base-900 dark:text-white">
+                <div class="text-3xl font-bold text-base-900 dark:text-white stat-value mb-3">
                     {{ avance_promedio|floatformat:1 }}%
                 </div>
-                <div class="mt-2">
-                    <div class="w-full bg-base-200 dark:bg-base-700 rounded-full h-2">
-                        <div class="h-2 rounded-full
-                            {% if avance_promedio >= 75 %}bg-green-500
-                            {% elif avance_promedio >= 50 %}bg-yellow-500
-                            {% elif avance_promedio >= 25 %}bg-orange-500
-                            {% else %}bg-red-500
-                            {% endif %}"
-                             style="width: {{ avance_promedio }}%">
-                        </div>
+                <div class="w-full bg-base-100 dark:bg-base-800 rounded-full h-1.5">
+                    <div class="h-1.5 rounded-full
+                        {% if avance_promedio >= 75 %}bg-emerald-500
+                        {% elif avance_promedio >= 50 %}bg-amber-500
+                        {% elif avance_promedio >= 25 %}bg-orange-500
+                        {% else %}bg-red-500
+                        {% endif %}"
+                         style="width: {{ avance_promedio }}%">
                     </div>
                 </div>
             </div>
 
         </div>
 
-        {# Gráficas - Contenedor estilo Unfold #}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {# ============ GRÁFICAS ============ #}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-            {# Gráfica 1: Estados #}
-            <div class="bg-white dark:bg-base-900 rounded-lg shadow-sm border border-base-200 dark:border-base-700 p-6">
-                <div class="mb-4 pb-4 border-b border-base-200 dark:border-base-700">
-                    <h3 class="text-lg font-semibold text-base-900 dark:text-white">
+            <div class="bg-white dark:bg-base-900 rounded-xl border border-base-100 dark:border-base-800 p-6">
+                <div class="mb-4">
+                    <h3 class="text-sm font-semibold text-base-900 dark:text-white tracking-tight">
                         Distribución por Estado
                     </h3>
-                    <p class="text-sm text-base-500 dark:text-base-400 mt-1">
+                    <p class="text-xs text-base-400 dark:text-base-500 mt-0.5">
                         Estado actual de todos los elementos
                     </p>
                 </div>
-                <div class="relative" style="height: 300px;">
+                <div class="relative" style="height: 280px;">
                     <canvas id="estadosChart"></canvas>
                 </div>
             </div>
 
-            {# Gráfica 2: Reportes #}
-            <div class="bg-white dark:bg-base-900 rounded-lg shadow-sm border border-base-200 dark:border-base-700 p-6">
-                <div class="mb-4 pb-4 border-b border-base-200 dark:border-base-700">
-                    <h3 class="text-lg font-semibold text-base-900 dark:text-white">
+            <div class="bg-white dark:bg-base-900 rounded-xl border border-base-100 dark:border-base-800 p-6">
+                <div class="mb-4">
+                    <h3 class="text-sm font-semibold text-base-900 dark:text-white tracking-tight">
                         Reportes Semanales
                     </h3>
-                    <p class="text-sm text-base-500 dark:text-base-400 mt-1">
+                    <p class="text-xs text-base-400 dark:text-base-500 mt-0.5">
                         Actividad de los últimos 7 días
                     </p>
                 </div>
-                <div class="relative" style="height: 300px;">
+                <div class="relative" style="height: 280px;">
                     <canvas id="reportesChart"></canvas>
                 </div>
             </div>
 
         </div>
 
-        {# Información Adicional del Proyecto #}
-        <div class="bg-white dark:bg-base-900 rounded-lg shadow-sm border border-base-200 dark:border-base-700 p-6">
-            <h3 class="text-lg font-semibold text-base-900 dark:text-white mb-4 pb-4 border-b border-base-200 dark:border-base-700">
+        {# ============ INFORMACIÓN DEL PROYECTO ============ #}
+        <div class="bg-white dark:bg-base-900 rounded-xl border border-base-100 dark:border-base-800 p-6">
+            <h3 class="text-sm font-semibold text-base-900 dark:text-white tracking-tight mb-5">
                 Información del Proyecto
             </h3>
-            <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5">
                 <div>
-                    <dt class="text-sm font-medium text-base-500 dark:text-base-400">Director de Obra</dt>
+                    <dt class="text-xs font-medium text-base-400 dark:text-base-500 uppercase tracking-wide">Director de Obra</dt>
                     <dd class="mt-1 text-sm text-base-900 dark:text-white font-medium">
                         {{ proyecto.director_obra|default:"No asignado" }}
                     </dd>
                 </div>
                 <div>
-                    <dt class="text-sm font-medium text-base-500 dark:text-base-400">Residente de Obra</dt>
+                    <dt class="text-xs font-medium text-base-400 dark:text-base-500 uppercase tracking-wide">Residente de Obra</dt>
                     <dd class="mt-1 text-sm text-base-900 dark:text-white font-medium">
                         {{ proyecto.residente_obra|default:"No asignado" }}
                     </dd>
                 </div>
                 <div>
-                    <dt class="text-sm font-medium text-base-500 dark:text-base-400">Sistema de Coordenadas</dt>
+                    <dt class="text-xs font-medium text-base-400 dark:text-base-500 uppercase tracking-wide">Sistema de Coordenadas</dt>
                     <dd class="mt-1 text-sm text-base-900 dark:text-white font-medium">
                         {{ proyecto.get_sistema_coordenadas_display }}
                     </dd>
                 </div>
                 <div>
-                    <dt class="text-sm font-medium text-base-500 dark:text-base-400">Fecha de Inicio</dt>
+                    <dt class="text-xs font-medium text-base-400 dark:text-base-500 uppercase tracking-wide">Fecha de Inicio</dt>
                     <dd class="mt-1 text-sm text-base-900 dark:text-white font-medium">
                         {{ proyecto.fecha_inicio|date:"d M Y" }}
                     </dd>
                 </div>
                 <div>
-                    <dt class="text-sm font-medium text-base-500 dark:text-base-400">Fecha Fin Estimada</dt>
+                    <dt class="text-xs font-medium text-base-400 dark:text-base-500 uppercase tracking-wide">Fecha Fin Estimada</dt>
                     <dd class="mt-1 text-sm text-base-900 dark:text-white font-medium">
                         {{ proyecto.fecha_fin_estimada|date:"d M Y" }}
                     </dd>
                 </div>
                 <div>
-                    <dt class="text-sm font-medium text-base-500 dark:text-base-400">Presupuesto</dt>
+                    <dt class="text-xs font-medium text-base-400 dark:text-base-500 uppercase tracking-wide">Presupuesto</dt>
                     <dd class="mt-1 text-sm text-base-900 dark:text-white font-medium">
                         ${{ proyecto.presupuesto_total|floatformat:0 }} MXN
                     </dd>
@@ -299,15 +197,14 @@
         </div>
 
     </div>
+
     {% block extrajs %}
         {{ block.super }}
         <script>
-            // Configuración de tema oscuro para Chart.js
             const isDarkMode = document.documentElement.classList.contains('dark');
-            const textColor = isDarkMode ? '#e5e7eb' : '#374151';
-            const gridColor = isDarkMode ? '#374151' : '#e5e7eb';
+            const textColor = isDarkMode ? '#9ca3af' : '#6b7280';
+            const gridColor = isDarkMode ? '#1f2937' : '#f3f4f6';
 
-            // Gráfica de Estados (Doughnut)
             const ctx1 = document.getElementById('estadosChart');
             if (ctx1) {
                 new Chart(ctx1, {
@@ -315,43 +212,25 @@
                     data: {
                         labels: ['Terminados', 'En Proceso', 'Pendientes'],
                         datasets: [{
-                            data: [
-                                {{ terminados }},
-                                {{ en_proceso }},
-                                {{ pendientes }}
-                            ],
-                            backgroundColor: [
-                                '#10b981',  // green
-                                '#f59e0b',  // yellow
-                                '#ef4444',  // red
-                            ],
+                            data: [{{ terminados }}, {{ en_proceso }}, {{ pendientes }}],
+                            backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
                             borderWidth: 2,
-                            borderColor: isDarkMode ? '#1f2937' : '#ffffff'
+                            borderColor: isDarkMode ? '#111827' : '#ffffff'
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        cutout: '68%',
                         plugins: {
                             legend: {
                                 position: 'bottom',
-                                labels: {
-                                    color: textColor,
-                                    padding: 15,
-                                    font: {
-                                        size: 12
-                                    }
-                                }
+                                labels: { color: textColor, padding: 14, font: { size: 11 }, boxWidth: 8, usePointStyle: true }
                             },
                             tooltip: {
                                 callbacks: {
                                     label: function (context) {
-                                        let label = context.label || '';
-                                        if (label) {
-                                            label += ': ';
-                                        }
-                                        label += context.parsed + ' elementos';
-                                        return label;
+                                        return `${context.label}: ${context.parsed} elementos`;
                                     }
                                 }
                             }
@@ -360,7 +239,6 @@
                 });
             }
 
-            // Gráfica de Reportes (Bar)
             const ctx2 = document.getElementById('reportesChart');
             if (ctx2) {
                 new Chart(ctx2, {
@@ -369,11 +247,10 @@
                         labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
                         datasets: [{
                             label: 'Reportes',
-                            data: [12, 19, 15, 25, 22, 8, 5], // Datos de ejemplo
+                            data: [12, 19, 15, 25, 22, 8, 5],
                             backgroundColor: '#3b82f6',
-                            borderColor: '#2563eb',
-                            borderWidth: 1,
-                            borderRadius: 6
+                            borderRadius: 4,
+                            maxBarThickness: 32
                         }]
                     },
                     options: {
@@ -382,31 +259,20 @@
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                ticks: {
-                                    color: textColor,
-                                    stepSize: 5
-                                },
-                                grid: {
-                                    color: gridColor
-                                }
+                                ticks: { color: textColor, stepSize: 5, font: { size: 11 } },
+                                grid: { color: gridColor }
                             },
                             x: {
-                                ticks: {
-                                    color: textColor
-                                },
-                                grid: {
-                                    display: false
-                                }
+                                ticks: { color: textColor, font: { size: 11 } },
+                                grid: { display: false }
                             }
                         },
                         plugins: {
-                            legend: {
-                                display: false
-                            },
+                            legend: { display: false },
                             tooltip: {
                                 callbacks: {
                                     label: function (context) {
-                                        return context.parsed.y + ' reportes';
+                                        return `${context.parsed.y} reportes`;
                                     }
                                 }
                             }
@@ -417,4 +283,3 @@
         </script>
     {% endblock %}
 {% endblock %}
-

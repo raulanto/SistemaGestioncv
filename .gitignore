@@ -12,3 +12,6 @@ db.sqlite3
 static
 media
 
+.agents
+.claude
+skills-lock.json
